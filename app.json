@@ -1,6 +1,6 @@
 {
   "expo": {
-    "name": "ti4-combat-roller",
+    "name": "TI4 Combat",
     "slug": "ti4-combat-roller",
     "version": "1.0.0",
     "orientation": "portrait",
@@ -9,22 +9,30 @@
     "splash": {
       "image": "./assets/splash.png",
       "resizeMode": "contain",
-      "backgroundColor": "#ffffff"
+      "backgroundColor": "#001219"
     },
     "assetBundlePatterns": [
       "**/*"
     ],
     "ios": {
-      "supportsTablet": true
+      "supportsTablet": true,
+      "bundleIdentifier": "com.adrianocola.ti4-combat-roller"
     },
     "android": {
       "adaptiveIcon": {
         "foregroundImage": "./assets/adaptive-icon.png",
-        "backgroundColor": "#ffffff"
-      }
+        "backgroundColor": "#001219"
+      },
+      "package": "com.adrianocola.ti4combatroller"
     },
     "web": {
       "favicon": "./assets/favicon.png"
-    }
+    },
+    "extra": {
+      "eas": {
+        "projectId": "744f47cb-1e81-4f95-95c1-4c1222a7b17b"
+      }
+    },
+    "owner": "adrianocola"
   }
 }
