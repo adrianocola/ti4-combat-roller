@@ -14,7 +14,9 @@
     "build-ios-simulator": "eas build --profile development --platform ios",
     "build-ios-preview": "eas build --profile preview --platform ios",
     "build-ios-stores": "eas build --profile production --platform ios",
-    "build-stores": "eas build --profile production --platform all"
+    "build-stores": "eas build --profile production --platform all",
+    "publish-android": "eas build --profile production --platform android --auto-submit",
+    "publish-ios": "eas build --profile production --platform ios --auto-submit"
   },
   "dependencies": {
     "@aptabase/react-native": "0.3.3",

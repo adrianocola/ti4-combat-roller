@@ -36,3 +36,6 @@ yarn-error.*
 
 # IDE
 .idea
+
+# Security
+service-account.json
