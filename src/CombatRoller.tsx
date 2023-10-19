@@ -1,8 +1,9 @@
-import React, {useCallback, useEffect, useRef, useState} from 'react';
+import React, {useCallback, useEffect, useMemo, useRef, useState} from 'react';
 import {StatusBar} from 'expo-status-bar';
 import {Image, StyleSheet, Text, TouchableOpacity, View} from 'react-native';
 import {useSafeAreaInsets} from 'react-native-safe-area-context';
 import * as Crypto from 'expo-crypto';
+import {useAptabase} from '@aptabase/react-native';
 
 import colors from './colors';
 import {randomFaces, randomNumber} from './random';
@@ -17,14 +18,19 @@ import DiceLine from './DiceLine';
 import {Dices, Face, Results} from './types';
 
 const CombatRoller = () => {
+  const {trackEvent} = useAptabase();
   const {top, bottom} = useSafeAreaInsets();
   const [dices, setDices] = useState<Dices>({});
   const [rolling, setRolling] = useState(false);
   const [rollId, setRollId] = useState(0);
-  const [diceCount, setDiceCount] = useState(0);
   const [results, setResults] = useState<Results>({});
   const currentRollIdRef = useRef(rollId);
-
+  const diceCount = useMemo(
+    () => Object.values(dices).reduce((acc, set) => acc + set.length, 0),
+    [dices],
+  );
+  const dicesRef = useRef(dices);
+  const diceCountRef = useRef(diceCount);
   const canRoll = !rolling && diceCount !== 0;
 
   const onAddOrRemoveDice = useCallback((face: Face, remove = false) => {
@@ -35,7 +41,6 @@ const CombatRoller = () => {
       if (remove) {
         if (set.length) {
           set.pop();
-          setDiceCount(prevDiceCount => prevDiceCount - 1);
         }
       } else if (set.length < MAX_DICE_SET) {
         const id = Crypto.randomUUID();
@@ -45,7 +50,6 @@ const CombatRoller = () => {
           duration: 0,
           success: false,
         });
-        setDiceCount(prevDiceCount => prevDiceCount + 1);
       }
 
       newDices[face] = set.map(item => ({...item, success: false}));
@@ -54,9 +58,10 @@ const CombatRoller = () => {
   }, []);
 
   const onReset = useCallback(() => {
+    trackEvent('reset', {diceCount: diceCountRef.current});
     setDices({});
     setResults({});
-  }, []);
+  }, [trackEvent]);
 
   const onRoll = useCallback(async () => {
     setRolling(true);
@@ -96,15 +101,22 @@ const CombatRoller = () => {
       return;
     }
 
+    const eventData: Record<string, number> = {};
     const resultsIntervals: Record<number, Results> = {};
     let highestDuration = 0;
+    let successCount = 0;
 
     Object.entries(dices).forEach(([face, set]) => {
       const faceInt = parseInt(face, 10) as Face;
+      let faceSuccessCount = 0;
+      eventData[`faceCount${face}`] = set.length;
       set.forEach(item => {
         highestDuration = Math.max(highestDuration, item.duration);
+        eventData[`resultCount${face}`] =
+          (eventData[`resultCount${face}`] ?? 0) + 1;
 
         if (item.success) {
+          faceSuccessCount + 1;
           const resultInterval =
             Math.floor(item.duration / RESULT_UPDATE_FREQ_MS) + 1;
           const result = resultsIntervals[resultInterval] ?? {};
@@ -112,7 +124,11 @@ const CombatRoller = () => {
           resultsIntervals[resultInterval] = result;
         }
       });
+      successCount += faceSuccessCount;
+      eventData[`faceSuccess${face}`] = faceSuccessCount;
     });
+    eventData.successCount = successCount;
+    eventData.diceCount = diceCountRef.current;
 
     Object.entries(resultsIntervals).forEach(([interval, result]) => {
       const intervalInt = parseInt(interval, 10);
@@ -129,11 +145,13 @@ const CombatRoller = () => {
       }, intervalInt * RESULT_UPDATE_FREQ_MS);
     });
 
+    trackEvent('roll', eventData);
+
     setTimeout(() => {
       setRolling(false);
       currentRollIdRef.current = rollId;
     }, highestDuration);
-  }, [dices, rollId]);
+  }, [dices, rollId, trackEvent]);
 
   return (
     <View style={styles.container}>

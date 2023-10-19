@@ -47,7 +47,7 @@ const Dice: React.FC<DiceProps> = ({textProps, initialFace, rollId, dice}) => {
     stylePos.value = withSequence(
       withTiming(getPosition(face, true), {
         duration,
-        easing: Easing.out(Easing.quad),
+        easing: Easing.out(Easing.cubic),
       }),
       withTiming(getPosition(face), {duration: 0}),
     );
