@@ -5,6 +5,7 @@ const colors = {
   BACKGROUND: '#001219',
   BACKGROUND_FOOTER: '#000f15',
   BACKGROUND_FOOTER_BUTTON: '#011d2a',
+  BACKGROUND_FOOTER_RESET: '#5b2727',
   // FACES1: {
   //   10: '#005f73',
   //   9: '#0a9396',

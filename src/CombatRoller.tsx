@@ -3,10 +3,10 @@ import {StatusBar} from 'expo-status-bar';
 import {Image, StyleSheet, Text, TouchableOpacity, View} from 'react-native';
 import {useSafeAreaInsets} from 'react-native-safe-area-context';
 import * as Crypto from 'expo-crypto';
-import {useAptabase} from '@aptabase/react-native';
+import {trackEvent} from '@aptabase/react-native';
 
 import colors from './colors';
-import {randomFaces, randomNumber} from './random';
+import {randomFace, randomNumber} from './random';
 import {
   FACES_REVERSED,
   MAX_DICE_SET,
@@ -18,7 +18,6 @@ import DiceLine from './DiceLine';
 import {Dices, Face, Results} from './types';
 
 const CombatRoller = () => {
-  const {trackEvent} = useAptabase();
   const {top, bottom} = useSafeAreaInsets();
   const [dices, setDices] = useState<Dices>({});
   const [rolling, setRolling] = useState(false);
@@ -29,7 +28,6 @@ const CombatRoller = () => {
     () => Object.values(dices).reduce((acc, set) => acc + set.length, 0),
     [dices],
   );
-  const dicesRef = useRef(dices);
   const diceCountRef = useRef(diceCount);
   const canRoll = !rolling && diceCount !== 0;
 
@@ -61,20 +59,10 @@ const CombatRoller = () => {
     trackEvent('reset', {diceCount: diceCountRef.current});
     setDices({});
     setResults({});
-  }, [trackEvent]);
+  }, []);
 
-  const onRoll = useCallback(async () => {
+  const onRoll = useCallback(() => {
     setRolling(true);
-
-    let randomCount = 0;
-    const faces = await randomFaces();
-
-    const getNextRandomFace = () => {
-      const face = faces[randomCount];
-      randomCount += 1;
-
-      return face;
-    };
 
     setResults({});
     setDices(prevDices => {
@@ -82,7 +70,7 @@ const CombatRoller = () => {
       Object.entries(prevDices).forEach(([face, set]) => {
         const faceInt = parseInt(face, 10) as Face;
         newDices[parseInt(face, 10) as Face] = set.map(item => {
-          const value = getNextRandomFace();
+          const value = randomFace();
           return {
             ...item,
             duration: randomNumber(MIN_ROLL_MS, MAX_ROLL_MS),
@@ -151,7 +139,7 @@ const CombatRoller = () => {
       setRolling(false);
       currentRollIdRef.current = rollId;
     }, highestDuration);
-  }, [dices, rollId, trackEvent]);
+  }, [dices, rollId]);
 
   return (
     <View style={styles.container}>
@@ -174,6 +162,22 @@ const CombatRoller = () => {
           <TouchableOpacity
             style={[
               styles.footerButton,
+              styles.footerRefresh,
+              !canRoll && styles.footerButtonDisabled,
+            ]}
+            disabled={!canRoll}
+            onPress={onReset}>
+            <Image
+              source={require('../assets/refresh.png')}
+              style={styles.footerDice}
+            />
+          </TouchableOpacity>
+          <Text style={[styles.text, styles.result]}>
+            {Object.values(results).reduce((a, r) => a + r, 0)}
+          </Text>
+          <TouchableOpacity
+            style={[
+              styles.footerButton,
               !canRoll && styles.footerButtonDisabled,
             ]}
             disabled={!canRoll}
@@ -182,11 +186,6 @@ const CombatRoller = () => {
               source={require('../assets/d10.png')}
               style={styles.footerDice}
             />
-          </TouchableOpacity>
-          <TouchableOpacity onPress={onReset} disabled={rolling} hitSlop={10}>
-            <Text style={[styles.text, styles.result]}>
-              {Object.values(results).reduce((a, r) => a + r, 0)}
-            </Text>
           </TouchableOpacity>
         </View>
       </View>
@@ -227,11 +226,14 @@ const styles = StyleSheet.create({
   footerButton: {
     flexDirection: 'row',
     backgroundColor: colors.BACKGROUND_FOOTER_BUTTON,
-    paddingHorizontal: 50,
+    paddingHorizontal: 30,
     paddingVertical: 10,
     borderRadius: 10,
     borderColor: colors.WHITE,
     borderWidth: StyleSheet.hairlineWidth,
+  },
+  footerRefresh: {
+    backgroundColor: colors.BACKGROUND_FOOTER_RESET,
   },
   footerButtonDisabled: {
     opacity: 0.25,

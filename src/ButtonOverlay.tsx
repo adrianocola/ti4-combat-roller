@@ -4,15 +4,13 @@ import Animated, {
   withSequence,
   withTiming,
 } from 'react-native-reanimated';
-import React, {useCallback, useState} from 'react';
+import React, {useCallback} from 'react';
 import {
+  StyleSheet,
   Text,
   TouchableWithoutFeedback,
   ViewStyle,
-  StyleSheet,
 } from 'react-native';
-
-const SIZE = 20;
 
 interface Props {
   text: string;
@@ -23,7 +21,6 @@ interface Props {
 
 const ButtonOverlay: React.FC<Props> = ({text, disabled, style, onPress}) => {
   const opacity = useSharedValue(0);
-  const [pressing, setPressing] = useState(false);
   const innerOnPress = useCallback(() => {
     opacity.value = withSequence(
       withTiming(1, {duration: 300}),

@@ -7,6 +7,8 @@ node_modules/
 .expo/
 dist/
 web-build/
+ios/
+android/
 
 # Native
 *.orig.*
@@ -37,5 +39,5 @@ yarn-error.*
 # IDE
 .idea
 
-# Security
+# Secret
 service-account.json
