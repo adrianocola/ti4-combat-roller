@@ -1,10 +1,10 @@
 import React, {useCallback} from 'react';
 import {StyleSheet, Text, View} from 'react-native';
-import colors from './colors';
-import {DiceConfig, Face} from './types';
-import Dice from './Dice';
+import colors from '@data/colors';
+import {MAX_DICE_SET} from '@data/consts';
+
 import ButtonOverlay from './ButtonOverlay';
-import {MAX_DICE_SET} from './consts';
+import Dice from './Dice';
 
 interface Props {
   face: Face;
@@ -44,7 +44,7 @@ const DiceLine: React.FC<Props> = ({
         </View>
       </View>
       {!diceCount && <View style={styles.emptyBackground} />}
-      <View style={styles.set}>
+      <View style={styles.diceSet}>
         {dices?.map(dice => (
           <Dice key={dice.id} initialFace={face} rollId={rollId} dice={dice} />
         ))}
@@ -89,7 +89,7 @@ const styles = StyleSheet.create({
     height: '100%',
     backgroundColor: 'rgba(0, 0, 0, 0.6)',
   },
-  set: {
+  diceSet: {
     flex: 1,
     flexWrap: 'wrap',
     flexDirection: 'row',
@@ -106,7 +106,7 @@ const styles = StyleSheet.create({
   },
   button: {
     flex: 1,
-    backgroundColor: 'rgba(255, 255, 255, 0.5)',
+    backgroundColor: 'rgba(255, 255, 255, 0.4)',
     height: '100%',
     alignItems: 'center',
     justifyContent: 'center',

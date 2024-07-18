@@ -1,6 +1,5 @@
 import Animated, {
   Easing,
-  useAnimatedStyle,
   useSharedValue,
   withDelay,
   withSequence,
@@ -8,12 +7,12 @@ import Animated, {
 } from 'react-native-reanimated';
 import React, {useEffect, useRef} from 'react';
 import {StyleSheet, TextProps, View} from 'react-native';
-import {FACES_3} from './consts';
-import colors from './colors';
-import {DiceConfig, Face} from './types';
+import {FACES_LIST} from '@data/consts';
+import colors from '@data/colors';
 
 const SIZE = 20;
 const FINAL_MS = 250;
+const FACES_TEXT = FACES_LIST.map(face => face).join('\n');
 
 interface DiceProps {
   textProps?: TextProps;
@@ -24,8 +23,8 @@ interface DiceProps {
 
 const getPosition = (value: Face, fromEnd?: boolean) => {
   const index = fromEnd
-    ? FACES_3.findLastIndex(p => p === value)
-    : FACES_3.findIndex(p => p === value);
+    ? FACES_LIST.findLastIndex(p => p === value)
+    : FACES_LIST.findIndex(p => p === value);
   return index * SIZE * -1;
 };
 
@@ -87,47 +86,31 @@ const Dice: React.FC<DiceProps> = ({textProps, initialFace, rollId, dice}) => {
     styleTextColor,
   ]);
 
-  const animatedFrameStyles = useAnimatedStyle(() => ({
-    backgroundColor: styleFrameBackground.value,
-    borderColor: styleFrameBorder.value,
-  }));
-
-  const animatedInnerStyles = useAnimatedStyle(() => ({
-    transform: [{translateY: stylePos.value}],
-  }));
-
-  const animatedTextStyles = useAnimatedStyle(() => ({
-    color: styleTextColor.value,
-  }));
-
   return (
     <View style={styles.container}>
       <Animated.View
         style={[
           styles.frame,
-          animatedFrameStyles,
-          // showSuccess && styles.frameSuccess,
-          // showFailure && styles.frameFailure,
+          {
+            backgroundColor: styleFrameBackground,
+            borderColor: styleFrameBorder,
+          },
         ]}
       />
       <View style={styles.roller}>
-        <Animated.View style={animatedInnerStyles}>
-          {FACES_3.map((v, i) => (
-            <Animated.Text
-              key={i}
-              adjustsFontSizeToFit={false}
-              allowFontScaling={false}
-              {...textProps}
-              style={[
-                styles.text,
-                // showSuccess && styles.textSuccess,
-                // showFailure && styles.textFailure,
-                animatedTextStyles,
-              ]}>
-              {v === 10 ? 0 : v}
-            </Animated.Text>
-          ))}
-        </Animated.View>
+        <Animated.Text
+          adjustsFontSizeToFit={false}
+          allowFontScaling={false}
+          {...textProps}
+          style={[
+            styles.text,
+            {
+              color: styleTextColor,
+              transform: [{translateY: stylePos}],
+            },
+          ]}>
+          {FACES_TEXT}
+        </Animated.Text>
       </View>
     </View>
   );
@@ -147,15 +130,10 @@ const styles = StyleSheet.create({
     height: SIZE,
   },
   text: {
-    height: SIZE,
+    textAlign: 'center',
+    height: FACES_LIST.length * SIZE,
     lineHeight: SIZE,
     color: colors.WHITE,
-  },
-  textSuccess: {
-    color: colors.BLACK,
-  },
-  textFailure: {
-    color: colors.GRAY,
   },
   frame: {
     position: 'absolute',
@@ -164,12 +142,6 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: colors.WHITE,
     transform: [{rotate: '45deg'}],
-  },
-  frameSuccess: {
-    backgroundColor: colors.WHITE,
-  },
-  frameFailure: {
-    borderColor: colors.GRAY,
   },
 });
 

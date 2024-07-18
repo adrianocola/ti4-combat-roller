@@ -1,21 +1,24 @@
 import React, {useCallback, useEffect, useMemo, useRef, useState} from 'react';
 import {StatusBar} from 'expo-status-bar';
-import {Image, StyleSheet, Text, TouchableOpacity, View} from 'react-native';
+import {StyleSheet, Text, View} from 'react-native';
 import {useSafeAreaInsets} from 'react-native-safe-area-context';
 import * as Crypto from 'expo-crypto';
 import {trackEvent} from '@aptabase/react-native';
 
-import colors from './colors';
-import {randomFace, randomNumber} from './random';
+import RefreshImage from '@assets/refresh.png';
+import D10Image from '@assets/d10.png';
+
+import colors from '@data/colors';
+import {randomFace, randomNumber} from '@utils/random';
 import {
-  FACES_REVERSED,
+  FACES_DISPLAY,
   MAX_DICE_SET,
   MAX_ROLL_MS,
   MIN_ROLL_MS,
   RESULT_UPDATE_FREQ_MS,
-} from './consts';
-import DiceLine from './DiceLine';
-import {Dices, Face, Results} from './types';
+} from '@data/consts';
+import DiceLine from '@components/DiceLine';
+import ButtonImage from '@components/ButtonImage';
 
 const CombatRoller = () => {
   const {top, bottom} = useSafeAreaInsets();
@@ -104,7 +107,7 @@ const CombatRoller = () => {
           (eventData[`resultCount${face}`] ?? 0) + 1;
 
         if (item.success) {
-          faceSuccessCount + 1;
+          faceSuccessCount += 1;
           const resultInterval =
             Math.floor(item.duration / RESULT_UPDATE_FREQ_MS) + 1;
           const result = resultsIntervals[resultInterval] ?? {};
@@ -141,52 +144,41 @@ const CombatRoller = () => {
     }, highestDuration);
   }, [dices, rollId]);
 
+  const resultsTotal = useMemo(() => {
+    return Object.values(results).reduce((a, r) => a + r, 0);
+  }, [results]);
+
   return (
     <View style={styles.container}>
       <StatusBar style="light" />
       <View style={[styles.content, {paddingTop: top}]}>
-        {FACES_REVERSED.map(face => (
+        {FACES_DISPLAY.map(face => (
           <DiceLine
             key={face}
             face={face}
             dices={dices[face]}
             rolling={rolling}
             rollId={rollId}
-            result={results?.[face] ?? 0}
+            result={results[face] ?? 0}
             onAddOrRemoveDice={onAddOrRemoveDice}
           />
         ))}
       </View>
       <View style={[styles.footer, {paddingBottom: bottom}]}>
         <View style={styles.footerContent}>
-          <TouchableOpacity
-            style={[
-              styles.footerButton,
-              styles.footerRefresh,
-              !canRoll && styles.footerButtonDisabled,
-            ]}
+          <ButtonImage
+            style={[styles.footerButton, styles.footerRefresh]}
             disabled={!canRoll}
-            onPress={onReset}>
-            <Image
-              source={require('../assets/refresh.png')}
-              style={styles.footerDice}
-            />
-          </TouchableOpacity>
-          <Text style={[styles.text, styles.result]}>
-            {Object.values(results).reduce((a, r) => a + r, 0)}
-          </Text>
-          <TouchableOpacity
-            style={[
-              styles.footerButton,
-              !canRoll && styles.footerButtonDisabled,
-            ]}
+            onPress={onReset}
+            image={RefreshImage}
+          />
+          <Text style={[styles.text, styles.result]}>{resultsTotal}</Text>
+          <ButtonImage
+            style={styles.footerButton}
             disabled={!canRoll}
-            onPress={onRoll}>
-            <Image
-              source={require('../assets/d10.png')}
-              style={styles.footerDice}
-            />
-          </TouchableOpacity>
+            onPress={onRoll}
+            image={D10Image}
+          />
         </View>
       </View>
     </View>
@@ -234,13 +226,6 @@ const styles = StyleSheet.create({
   },
   footerRefresh: {
     backgroundColor: colors.BACKGROUND_FOOTER_RESET,
-  },
-  footerButtonDisabled: {
-    opacity: 0.25,
-  },
-  footerDice: {
-    width: 26,
-    height: 26,
   },
   text: {
     color: colors.WHITE,
