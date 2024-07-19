@@ -4,12 +4,7 @@ import Animated, {
   withTiming,
 } from 'react-native-reanimated';
 import React from 'react';
-import {
-  StyleSheet,
-  Text,
-  TouchableWithoutFeedback,
-  ViewStyle,
-} from 'react-native';
+import {Pressable, StyleSheet, Text, ViewStyle} from 'react-native';
 import colors from '@data/colors';
 
 interface Props {
@@ -42,7 +37,8 @@ const ButtonOverlay: React.FC<Props> = ({text, disabled, style, onPress}) => {
   };
 
   return (
-    <TouchableWithoutFeedback
+    <Pressable
+      style={styles.pressable}
       disabled={disabled}
       onPressIn={onPressIn}
       onPressOut={onPressOut}
@@ -50,11 +46,14 @@ const ButtonOverlay: React.FC<Props> = ({text, disabled, style, onPress}) => {
       <Animated.View style={[style, {opacity}]}>
         <Text style={styles.text}>{text}</Text>
       </Animated.View>
-    </TouchableWithoutFeedback>
+    </Pressable>
   );
 };
 
 const styles = StyleSheet.create({
+  pressable: {
+    flex: 1,
+  },
   text: {
     color: colors.WHITE,
     fontSize: 64,

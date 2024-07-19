@@ -1,33 +1,25 @@
 import React from 'react';
-import {
-  Image,
-  StyleSheet,
-  TouchableOpacity,
-  TouchableOpacityProps,
-} from 'react-native';
+import {Image, StyleSheet} from 'react-native';
 import {ImageSourcePropType} from 'react-native/Libraries/Image/Image';
+import Button, {ButtonProps} from '@components/Button';
 
-interface ButtonProps extends TouchableOpacityProps {
+interface ButtonImageProps extends ButtonProps {
   image: ImageSourcePropType;
 }
 
-const ButtonImage: React.FC<ButtonProps> = ({
+const ButtonImage: React.FC<ButtonImageProps> = ({
   image,
   disabled,
-  style,
   ...props
 }) => {
   return (
-    <TouchableOpacity {...props} style={[style, disabled && styles.disabled]}>
+    <Button {...props}>
       <Image source={image} style={styles.image} />
-    </TouchableOpacity>
+    </Button>
   );
 };
 
 const styles = StyleSheet.create({
-  disabled: {
-    opacity: 0.25,
-  },
   image: {
     width: 26,
     height: 26,

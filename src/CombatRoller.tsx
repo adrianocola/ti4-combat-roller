@@ -1,15 +1,14 @@
 import React, {useCallback, useEffect, useMemo, useRef, useState} from 'react';
 import {StatusBar} from 'expo-status-bar';
-import {StyleSheet, Text, View} from 'react-native';
+import {StyleSheet, View} from 'react-native';
 import {useSafeAreaInsets} from 'react-native-safe-area-context';
-import * as Crypto from 'expo-crypto';
 import {trackEvent} from '@aptabase/react-native';
 
 import RefreshImage from '@assets/refresh.png';
 import D10Image from '@assets/d10.png';
 
 import colors from '@data/colors';
-import {randomFace, randomNumber} from '@utils/random';
+import {randomFace, randomNumber, randomString} from '@utils/random';
 import {
   FACES_DISPLAY,
   MAX_DICE_SET,
@@ -19,6 +18,8 @@ import {
 } from '@data/consts';
 import DiceLine from '@components/DiceLine';
 import ButtonImage from '@components/ButtonImage';
+import StatsModal from '@components/StatsModal';
+import Button from '@components/Button';
 
 const CombatRoller = () => {
   const {top, bottom} = useSafeAreaInsets();
@@ -26,6 +27,7 @@ const CombatRoller = () => {
   const [rolling, setRolling] = useState(false);
   const [rollId, setRollId] = useState(0);
   const [results, setResults] = useState<Results>({});
+  const [statsModalVisible, setStatsModalVisible] = useState(false);
   const currentRollIdRef = useRef(rollId);
   const diceCount = useMemo(
     () => Object.values(dices).reduce((acc, set) => acc + set.length, 0),
@@ -44,9 +46,8 @@ const CombatRoller = () => {
           set.pop();
         }
       } else if (set.length < MAX_DICE_SET) {
-        const id = Crypto.randomUUID();
         set.push({
-          id,
+          id: randomString(),
           face,
           duration: 0,
           success: false,
@@ -82,6 +83,7 @@ const CombatRoller = () => {
           };
         });
       });
+
       return newDices;
     });
     setRollId(Date.now());
@@ -172,7 +174,14 @@ const CombatRoller = () => {
             onPress={onReset}
             image={RefreshImage}
           />
-          <Text style={[styles.text, styles.result]}>{resultsTotal}</Text>
+          <Button
+            style={styles.resultButton}
+            title={resultsTotal}
+            titleStyle={styles.resultText}
+            transparent
+            disabled={Object.keys(dices).length === 0}
+            onPress={() => setStatsModalVisible(true)}
+          />
           <ButtonImage
             style={styles.footerButton}
             disabled={!canRoll}
@@ -181,6 +190,12 @@ const CombatRoller = () => {
           />
         </View>
       </View>
+      <StatsModal
+        dices={dices}
+        resultsTotal={resultsTotal}
+        visible={statsModalVisible}
+        onClose={() => setStatsModalVisible(false)}
+      />
     </View>
   );
 };
@@ -216,21 +231,18 @@ const styles = StyleSheet.create({
     justifyContent: 'space-around',
   },
   footerButton: {
-    flexDirection: 'row',
-    backgroundColor: colors.BACKGROUND_FOOTER_BUTTON,
     paddingHorizontal: 30,
     paddingVertical: 10,
-    borderRadius: 10,
-    borderColor: colors.WHITE,
-    borderWidth: StyleSheet.hairlineWidth,
+    marginHorizontal: 20,
   },
   footerRefresh: {
     backgroundColor: colors.BACKGROUND_FOOTER_RESET,
   },
-  text: {
-    color: colors.WHITE,
+  resultButton: {
+    flex: 1,
   },
-  result: {
+  resultText: {
+    color: colors.WHITE,
     fontSize: 32,
     fontWeight: 'bold',
   },
