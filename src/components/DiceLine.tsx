@@ -5,39 +5,32 @@ import {ColorSet, MAX_DICE_SET} from '@data/consts';
 
 import ButtonOverlay from './ButtonOverlay';
 import Dice from './Dice';
+import {useAppDispatch, useAppSelector} from '@hooks/storeHooks';
+import {addDice, removeDice} from '@store/diceSetSlice';
 
 interface Props {
   colorSet: ColorSet;
   face: Face;
-  dices?: DiceConfig[];
-  rolling: boolean;
-  rollId: number;
-  result: number;
-  onAddDice: (face: Face) => void;
-  onRemoveDice: (face: Face) => void;
 }
 
-const DiceLine: React.FC<Props> = ({
-  colorSet,
-  face,
-  dices,
-  rolling,
-  rollId,
-  result,
-  onAddDice,
-  onRemoveDice,
-}) => {
+const DiceLine: React.FC<Props> = ({colorSet, face}) => {
+  const dispatch = useAppDispatch();
+  const dices = useAppSelector(state => state.diceSet[colorSet].dices[face]);
+  const rolling = useAppSelector(state => state.diceSet[colorSet].rolling);
+  const result = useAppSelector(
+    state => state.diceSet[colorSet].results[face] ?? 0,
+  );
   const color = colors.FACES_COLORS[colorSet][face];
 
   const diceCount = dices?.length ?? 0;
 
-  const innerOnAddDice = useCallback(() => {
-    onAddDice(face);
-  }, [face, onAddDice]);
+  const onAddDice = useCallback(() => {
+    dispatch(addDice({colorSet, face}));
+  }, [colorSet, dispatch, face]);
 
-  const innerOnRemoveDice = useCallback(() => {
-    onRemoveDice(face);
-  }, [face, onRemoveDice]);
+  const onRemoveDice = useCallback(() => {
+    dispatch(removeDice({colorSet, face}));
+  }, [colorSet, dispatch, face]);
 
   return (
     <View style={[styles.container, {backgroundColor: color}]}>
@@ -50,7 +43,12 @@ const DiceLine: React.FC<Props> = ({
       {!diceCount && <View style={styles.emptyBackground} />}
       <View style={styles.diceSet}>
         {dices?.map(dice => (
-          <Dice key={dice.id} initialFace={face} rollId={rollId} dice={dice} />
+          <Dice
+            key={dice.id}
+            colorSet={colorSet}
+            targetFace={face}
+            dice={dice}
+          />
         ))}
       </View>
       <View style={styles.resultContainer}>
@@ -65,13 +63,13 @@ const DiceLine: React.FC<Props> = ({
           text="-"
           style={styles.button}
           disabled={rolling || !diceCount}
-          onPress={innerOnRemoveDice}
+          onPress={onRemoveDice}
         />
         <ButtonOverlay
           text="+"
           style={styles.button}
           disabled={rolling || diceCount >= MAX_DICE_SET}
-          onPress={innerOnAddDice}
+          onPress={onAddDice}
         />
       </View>
     </View>

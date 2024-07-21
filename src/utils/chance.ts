@@ -44,7 +44,7 @@ export const calcExactSuccessChances = (dices: Dices) => {
     (acc, [face, diceSet]) => {
       const faceInt = parseInt(face, 10) as Face;
       const success = (FACES.length - faceInt + 1) / FACES.length;
-      acc.push(...diceSet.map(dice => success));
+      acc.push(...diceSet.map(() => success));
       return acc;
     },
     [],

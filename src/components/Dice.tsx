@@ -5,19 +5,20 @@ import Animated, {
   withSequence,
   withTiming,
 } from 'react-native-reanimated';
-import React, {useEffect, useRef} from 'react';
-import {StyleSheet, TextProps, View} from 'react-native';
-import {FACES_LIST} from '@data/consts';
+import React, {useEffect} from 'react';
+import {StyleSheet, View} from 'react-native';
+import {ColorSet, FACES_LIST} from '@data/consts';
 import colors from '@data/colors';
+import {useAppDispatch, useAppSelector} from '@hooks/storeHooks';
+import {registerSuccess} from '@store/diceSetSlice';
 
 const SIZE = 20;
 const FINAL_MS = 250;
 const FACES_TEXT = FACES_LIST.map(face => face).join('\n');
 
 interface DiceProps {
-  textProps?: TextProps;
-  initialFace: Face;
-  rollId: number;
+  colorSet: ColorSet;
+  targetFace: Face;
   dice: DiceConfig;
 }
 
@@ -28,19 +29,18 @@ const getPosition = (value: Face, fromEnd?: boolean) => {
   return index * SIZE * -1;
 };
 
-const Dice: React.FC<DiceProps> = ({textProps, initialFace, rollId, dice}) => {
-  const stylePos = useSharedValue(getPosition(initialFace));
+const Dice: React.FC<DiceProps> = ({colorSet, targetFace, dice}) => {
+  const stylePos = useSharedValue(getPosition(targetFace));
   const styleFrameBackground = useSharedValue('transparent');
   const styleFrameBorder = useSharedValue(colors.WHITE);
   const styleTextColor = useSharedValue(colors.WHITE);
-  const currentRollIdRef = useRef(rollId);
+  const rollId = useAppSelector(state => state.diceSet[colorSet].rollId);
+  const dispatch = useAppDispatch();
 
   useEffect(() => {
-    if (rollId === currentRollIdRef.current) {
+    if (!rollId) {
       return;
     }
-
-    currentRollIdRef.current = rollId;
 
     const {face, duration, success} = dice;
     stylePos.value = withSequence(
@@ -77,14 +77,17 @@ const Dice: React.FC<DiceProps> = ({textProps, initialFace, rollId, dice}) => {
         }),
       ),
     );
-  }, [
-    dice,
-    rollId,
-    styleFrameBackground,
-    styleFrameBorder,
-    stylePos,
-    styleTextColor,
-  ]);
+
+    if (success) {
+      const timeout = setTimeout(() => {
+        dispatch(registerSuccess({colorSet, face: targetFace}));
+      }, duration);
+
+      return () => {
+        clearTimeout(timeout);
+      };
+    }
+  }, [rollId]); // eslint-disable-line react-hooks/exhaustive-deps
 
   return (
     <View style={styles.container}>
@@ -101,7 +104,6 @@ const Dice: React.FC<DiceProps> = ({textProps, initialFace, rollId, dice}) => {
         <Animated.Text
           adjustsFontSizeToFit={false}
           allowFontScaling={false}
-          {...textProps}
           style={[
             styles.text,
             {
