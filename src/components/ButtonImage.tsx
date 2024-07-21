@@ -7,11 +7,7 @@ interface ButtonImageProps extends ButtonProps {
   image: ImageSourcePropType;
 }
 
-const ButtonImage: React.FC<ButtonImageProps> = ({
-  image,
-  disabled,
-  ...props
-}) => {
+const ButtonImage: React.FC<ButtonImageProps> = ({image, ...props}) => {
   return (
     <Button {...props}>
       <Image source={image} style={styles.image} />

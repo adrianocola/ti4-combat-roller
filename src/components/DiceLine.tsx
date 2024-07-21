@@ -1,39 +1,43 @@
 import React, {useCallback} from 'react';
 import {StyleSheet, Text, View} from 'react-native';
 import colors from '@data/colors';
-import {MAX_DICE_SET} from '@data/consts';
+import {ColorSet, MAX_DICE_SET} from '@data/consts';
 
 import ButtonOverlay from './ButtonOverlay';
 import Dice from './Dice';
 
 interface Props {
+  colorSet: ColorSet;
   face: Face;
   dices?: DiceConfig[];
   rolling: boolean;
   rollId: number;
   result: number;
-  onAddOrRemoveDice: (face: Face, remove?: boolean) => void;
+  onAddDice: (face: Face) => void;
+  onRemoveDice: (face: Face) => void;
 }
 
 const DiceLine: React.FC<Props> = ({
+  colorSet,
   face,
   dices,
   rolling,
   rollId,
   result,
-  onAddOrRemoveDice,
+  onAddDice,
+  onRemoveDice,
 }) => {
-  const color = colors.FACES[face];
-
-  const onRemoveDice = useCallback(() => {
-    onAddOrRemoveDice(face, true);
-  }, [onAddOrRemoveDice, face]);
-
-  const onAddDice = useCallback(() => {
-    onAddOrRemoveDice(face);
-  }, [onAddOrRemoveDice, face]);
+  const color = colors.FACES_COLORS[colorSet][face];
 
   const diceCount = dices?.length ?? 0;
+
+  const innerOnAddDice = useCallback(() => {
+    onAddDice(face);
+  }, [face, onAddDice]);
+
+  const innerOnRemoveDice = useCallback(() => {
+    onRemoveDice(face);
+  }, [face, onRemoveDice]);
 
   return (
     <View style={[styles.container, {backgroundColor: color}]}>
@@ -61,13 +65,13 @@ const DiceLine: React.FC<Props> = ({
           text="-"
           style={styles.button}
           disabled={rolling || !diceCount}
-          onPress={onRemoveDice}
+          onPress={innerOnRemoveDice}
         />
         <ButtonOverlay
           text="+"
           style={styles.button}
           disabled={rolling || diceCount >= MAX_DICE_SET}
-          onPress={onAddDice}
+          onPress={innerOnAddDice}
         />
       </View>
     </View>

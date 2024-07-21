@@ -51,11 +51,13 @@ const HitChancesList: React.FC<HitChancesListProps> = ({
           onPress={() => setShowExactResult(false)}
           title="At Least X Hits"
           transparent={showExactResult}
+          titleStyle={showExactResult && styles.notSelectedOption}
         />
         <Button
           onPress={() => setShowExactResult(true)}
           title="Exactly X Hits"
           transparent={!showExactResult}
+          titleStyle={!showExactResult && styles.notSelectedOption}
         />
       </View>
       <FlatList
@@ -76,6 +78,10 @@ const styles = StyleSheet.create({
     justifyContent: 'space-around',
     marginTop: 20,
     alignItems: 'center',
+  },
+  notSelectedOption: {
+    fontWeight: 'normal',
+    textDecorationLine: 'underline',
   },
   list: {
     marginTop: 20,

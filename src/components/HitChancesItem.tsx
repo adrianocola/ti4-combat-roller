@@ -29,8 +29,14 @@ const getSuccessesText = (
 const getChanceText = (chance: number) => {
   chance *= 100;
 
+  if (chance === 100) {
+    return '100';
+  }
   if (chance > 99.99) {
     return '99.99';
+  }
+  if (chance === 0) {
+    return '0';
   }
   if (chance < 0.01) {
     return '0.01';
