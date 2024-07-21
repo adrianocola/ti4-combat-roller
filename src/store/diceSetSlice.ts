@@ -21,7 +21,7 @@ const initialState: DiceSetState = {
 };
 
 export const diceSetSlice = createSlice({
-  name: 'counter',
+  name: 'diceSet',
   initialState,
   reducers: {
     addDice: (

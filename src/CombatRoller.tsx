@@ -1,5 +1,6 @@
 import React, {
   useCallback,
+  useEffect,
   useLayoutEffect,
   useMemo,
   useRef,
@@ -8,12 +9,13 @@ import React, {
 import {StatusBar} from 'expo-status-bar';
 import {ScrollView, StyleSheet, useWindowDimensions, View} from 'react-native';
 import {useSafeAreaInsets} from 'react-native-safe-area-context';
+import * as SplashScreen from 'expo-splash-screen';
 
 import RefreshImage from '@assets/refresh.png';
 import D10Image from '@assets/d10.png';
 
 import colors from '@data/colors';
-import {ColorSet} from '@data/consts';
+import {BASE_SCREEN_ORDER, ColorSet} from '@data/consts';
 import ButtonImage from '@components/ButtonImage';
 import StatsModal from '@components/StatsModal';
 import Button from '@components/Button';
@@ -23,22 +25,28 @@ import {NativeScrollEvent} from 'react-native/Libraries/Components/ScrollView/Sc
 import {arrayRotate, arraySum} from '@utils/array';
 import {useAppDispatch, useAppSelector} from '@hooks/storeHooks';
 import {reset, roll} from '@store/diceSetSlice';
+import {setSelectedColorSet} from '@store/preferencesSlice';
+
+const centerScreenOrder = (
+  screenOrder: ColorSet[],
+  selectedColorSet: ColorSet,
+) => {
+  const selectedIndex = screenOrder.indexOf(selectedColorSet);
+  return arrayRotate(screenOrder, selectedIndex - 2);
+};
 
 const CombatRoller = () => {
   const scrollRef = useRef<ScrollView>(null);
   const {top, bottom} = useSafeAreaInsets();
   const dicesColorSet = useAppSelector(state => state.diceSet);
-  const dispatch = useAppDispatch();
-  const [selectedColorSet, setSelectedColorSet] = useState<ColorSet>(
-    ColorSet.Orange,
+  const selectedColorSet = useAppSelector(
+    state => state.preferences.selectedColorSet,
   );
-  const [screenOrder, setScreenOrder] = useState(() => [
-    ColorSet.Purple,
-    ColorSet.Gray,
-    ColorSet.Orange,
-    ColorSet.Blue,
-    ColorSet.Green,
-  ]);
+  const dispatch = useAppDispatch();
+
+  const [screenOrder, setScreenOrder] = useState(() =>
+    centerScreenOrder(BASE_SCREEN_ORDER, selectedColorSet),
+  );
   const {width} = useWindowDimensions();
   const [statsModalVisible, setStatsModalVisible] = useState(false);
   const diceCount = useMemo(
@@ -81,7 +89,7 @@ const CombatRoller = () => {
         return;
       }
 
-      setSelectedColorSet(newColorSet);
+      dispatch(setSelectedColorSet({selectedColorSet: newColorSet}));
       setScreenOrder(prevScreenOrder =>
         arrayRotate(prevScreenOrder, selectedIndex - 2),
       );
@@ -92,6 +100,12 @@ const CombatRoller = () => {
   useLayoutEffect(() => {
     scrollRef.current?.scrollTo({x: 2 * width, y: 0, animated: false});
   }, [screenOrder]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  useEffect(() => {
+    requestAnimationFrame(() => {
+      SplashScreen.hideAsync();
+    });
+  }, []);
 
   return (
     <View style={styles.container}>
