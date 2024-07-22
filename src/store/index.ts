@@ -12,7 +12,7 @@ import {
 } from 'redux-persist';
 
 import dicesReducer from './diceSetSlice';
-import preferencesReducer from './preferencesSlice';
+import settingsReduces from './settingsSlice';
 
 const persistConfig = {
   version: 1,
@@ -23,7 +23,7 @@ const persistConfig = {
 
 const rootReducer = combineReducers({
   diceSet: dicesReducer,
-  preferences: preferencesReducer,
+  settings: settingsReduces,
 });
 
 const persistedReducer = persistReducer(persistConfig, rootReducer);

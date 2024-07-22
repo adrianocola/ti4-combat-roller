@@ -8,7 +8,6 @@ import React, {
 } from 'react';
 import {StatusBar} from 'expo-status-bar';
 import {
-  Image,
   ScrollView,
   StyleSheet,
   Text,
@@ -20,7 +19,6 @@ import * as SplashScreen from 'expo-splash-screen';
 
 import ResetImage from '@assets/reset.png';
 import D10Image from '@assets/d10.png';
-import InfoIcon from '@assets/info.png';
 
 import colors from '@data/colors';
 import Colors from '@data/colors';
@@ -34,8 +32,12 @@ import {NativeScrollEvent} from 'react-native/Libraries/Components/ScrollView/Sc
 import {arrayRotate, arraySum} from '@utils/array';
 import {useAppDispatch, useAppSelector} from '@hooks/storeHooks';
 import {reset, roll} from '@store/diceSetSlice';
-import {setSelectedColorSet} from '@store/preferencesSlice';
+import {
+  setSelectedColorSet,
+  setShowInitialAnimation,
+} from '@store/settingsSlice';
 import {getChanceText} from '@utils/chance';
+import {store} from '@store/index';
 
 const centerScreenOrder = (
   screenOrder: ColorSet[],
@@ -50,7 +52,7 @@ const CombatRoller = () => {
   const {top, bottom} = useSafeAreaInsets();
   const dicesColorSet = useAppSelector(state => state.diceSet);
   const selectedColorSet = useAppSelector(
-    state => state.preferences.selectedColorSet,
+    state => state.settings.selectedColorSet,
   );
   const dispatch = useAppDispatch();
 
@@ -83,14 +85,6 @@ const CombatRoller = () => {
   const onReset = useCallback(() => {
     dispatch(reset({colorSet: selectedColorSet}));
   }, [dispatch, selectedColorSet]);
-
-  const onPrevPage = useCallback(() => {
-    scrollRef.current?.scrollTo({x: width, y: 0, animated: true});
-  }, [width]);
-
-  const onNextPage = useCallback(() => {
-    scrollRef.current?.scrollTo({x: 3 * width, y: 0, animated: true});
-  }, [width]);
 
   const toggleStatsModal = useCallback(() => {
     setStatsModalVisible(prevStatsModalVisible => !prevStatsModalVisible);
@@ -127,43 +121,26 @@ const CombatRoller = () => {
     requestAnimationFrame(() => {
       SplashScreen.hideAsync();
     });
-  }, []);
+
+    // show litte animation the first time the user opens the app,
+    // so it knows that there are other dice set colors to choose from
+    setTimeout(() => {
+      const showInitialAnimation =
+        store.getState().settings.showInitialAnimation;
+      if (showInitialAnimation) {
+        store.dispatch(setShowInitialAnimation({showInitialAnimation: false}));
+        scrollRef.current?.scrollTo({x: 2 * width + 70, y: 0, animated: true});
+        setTimeout(() => {
+          scrollRef.current?.scrollTo({x: 2 * width, y: 0, animated: true});
+        }, 600);
+      }
+    }, 500);
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   return (
     <View style={styles.container}>
       <StatusBar style="light" />
       <View style={[styles.content, {paddingTop: top}]}>
-        <View style={styles.header}>
-          <Button
-            style={styles.headerButton}
-            title="◀︎"
-            onPress={onPrevPage}
-            transparent
-          />
-          <Button
-            style={styles.headerButton}
-            onPress={toggleStatsModal}
-            transparent>
-            <View style={styles.headerTextContainer}>
-              <Text style={styles.headerText}>
-                {dicesColorSet[selectedColorSet].chancesAccumulative.length
-                  ? `${getChanceText(dicesColorSet[selectedColorSet].chancesAccumulative[resultsTotal])}%`
-                  : '%'}
-              </Text>
-              <Image
-                source={InfoIcon}
-                style={styles.headerInfo}
-                tintColor={Colors.WHITE}
-              />
-            </View>
-          </Button>
-          <Button
-            style={styles.headerButton}
-            title="▶︎"
-            onPress={onNextPage}
-            transparent
-          />
-        </View>
         <ScrollView
           ref={scrollRef}
           contentOffset={{x: 2 * width, y: 0}}
@@ -191,12 +168,18 @@ const CombatRoller = () => {
           />
           <Button
             style={styles.resultButton}
-            title={resultsTotal}
-            titleStyle={styles.resultText}
             transparent
             disabled={diceCount === 0}
-            onPress={toggleStatsModal}
-          />
+            onPress={toggleStatsModal}>
+            <View style={styles.resultContent}>
+              <Text style={styles.resultText}>{resultsTotal}</Text>
+              <Text style={styles.statsText}>
+                {dicesColorSet[selectedColorSet].chancesAccumulative.length
+                  ? `${getChanceText(dicesColorSet[selectedColorSet].chancesAccumulative[resultsTotal])}%`
+                  : '%'}
+              </Text>
+            </View>
+          </Button>
           <ButtonImage
             style={styles.footerButton}
             disabled={!canRoll}
@@ -223,43 +206,14 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
-  safeArea: {
-    flex: 1,
-    width: '100%',
-  },
   content: {
     flex: 1,
     width: '100%',
     alignItems: 'center',
   },
-  header: {
-    width: '100%',
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingBottom: 5,
-  },
-  headerButton: {
-    flex: 1,
-  },
-  headerTextContainer: {
-    flex: 1,
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  headerText: {
-    color: Colors.WHITE,
-  },
-  headerInfo: {
-    width: 14,
-    height: 14,
-    marginLeft: 5,
-  },
   footer: {
     paddingTop: 15,
     width: '100%',
-    borderTopWidth: StyleSheet.hairlineWidth,
-    borderTopColor: colors.GRAY,
     backgroundColor: colors.BACKGROUND,
   },
   footerContent: {
@@ -279,11 +233,25 @@ const styles = StyleSheet.create({
   },
   resultButton: {
     flex: 1,
+    paddingVertical: 0,
+  },
+  resultContent: {
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   resultText: {
     color: colors.WHITE,
     fontSize: 32,
+    lineHeight: 32,
     fontWeight: 'bold',
+    textAlign: 'center',
+  },
+  statsText: {
+    color: Colors.GRAY_DARK,
+    fontSize: 12,
+    lineHeight: 12,
+    height: 10,
     textAlign: 'center',
   },
 });

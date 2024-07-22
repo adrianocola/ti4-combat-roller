@@ -11,6 +11,8 @@ interface HitChancesItemProps {
   showExactResult: boolean;
 }
 
+export const ITEM_HEIGHT = 20;
+
 const HitChancesItem: React.FC<HitChancesItemProps> = ({
   hits,
   chance,
@@ -41,12 +43,13 @@ const HitChancesItem: React.FC<HitChancesItemProps> = ({
 const styles = StyleSheet.create({
   listItem: {
     justifyContent: 'space-between',
+    alignItems: 'center',
     flexDirection: 'row',
-    paddingVertical: 3,
+    height: ITEM_HEIGHT,
     marginVertical: 3,
     paddingHorizontal: 5,
     borderRadius: 3,
-    borderColor: Colors.SEPARATOR,
+    borderColor: Colors.GRAY_DARK,
     borderWidth: StyleSheet.hairlineWidth,
     backgroundColor: Colors.BACKGROUND_BUTTON,
   },

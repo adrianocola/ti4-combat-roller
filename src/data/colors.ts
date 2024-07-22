@@ -3,7 +3,7 @@ import {ColorSet} from '@data/consts';
 const colors = {
   WHITE: '#fcfcfc',
   GRAY: '#c0c0c0',
-  SEPARATOR: '#373737',
+  GRAY_DARK: '#474747',
   BLACK: '#000000',
   SELECTED: '#ffba08',
 
