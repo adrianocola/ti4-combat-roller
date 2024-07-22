@@ -5,11 +5,11 @@
     "version": "1.1.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
-    "userInterfaceStyle": "light",
+    "userInterfaceStyle": "dark",
     "splash": {
       "image": "./assets/splash.png",
       "resizeMode": "contain",
-      "backgroundColor": "#001219"
+      "backgroundColor": "#161616"
     },
     "assetBundlePatterns": [
       "**/*"
@@ -29,7 +29,7 @@
     "android": {
       "adaptiveIcon": {
         "foregroundImage": "./assets/adaptive-icon.png",
-        "backgroundColor": "#001219"
+        "backgroundColor": "#161616"
       },
       "package": "com.adrianocola.ti4combatroller",
       "permissions": ["android.permission.INTERNET"]
