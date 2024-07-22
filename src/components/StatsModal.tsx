@@ -10,16 +10,19 @@ import {
 import Colors from '@data/colors';
 import HitChancesList from '@components/HitChancesList';
 import Button from '@components/Button';
+import {ColorSet} from '@data/consts';
 
 interface StatsModalPros extends ModalProps {
-  dices: Dices;
+  colorSet: ColorSet;
   resultsTotal: number;
+  diceCount: number;
   onClose: () => void;
 }
 
 const StatsModal: React.FC<StatsModalPros> = ({
-  dices,
+  colorSet,
   resultsTotal,
+  diceCount,
   onClose,
   ...props
 }) => {
@@ -37,7 +40,8 @@ const StatsModal: React.FC<StatsModalPros> = ({
         />
         <View style={styles.modal}>
           <Text style={styles.title}>Hit Chances</Text>
-          <HitChancesList dices={dices} resultsTotal={resultsTotal} />
+          <Text style={styles.subtitle}>{diceCount} dice</Text>
+          <HitChancesList colorSet={colorSet} resultsTotal={resultsTotal} />
           <Button
             style={styles.closeContainer}
             transparent
@@ -64,13 +68,13 @@ const styles = StyleSheet.create({
     height: '100%',
     top: 0,
     left: 0,
-    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    backgroundColor: 'rgba(0, 0, 0, 0.75)',
   },
   modal: {
     flex: 1,
     width: '90%',
     maxHeight: '50%',
-    backgroundColor: Colors.BACKGROUND,
+    backgroundColor: Colors.BACKGROUND_MODAL,
     shadowColor: Colors.BLACK,
     shadowRadius: 5,
     shadowOffset: {width: 0, height: 5},
@@ -84,6 +88,12 @@ const styles = StyleSheet.create({
     color: Colors.WHITE,
     textAlign: 'center',
     fontSize: 20,
+  },
+  subtitle: {
+    color: Colors.GRAY,
+    textAlign: 'center',
+    marginTop: 3,
+    fontSize: 12,
   },
   closeContainer: {
     position: 'absolute',

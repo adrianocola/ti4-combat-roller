@@ -73,3 +73,38 @@ export const calcAccumulativeSuccessChances = (probabilityList: number[]) => {
 
   return chances;
 };
+
+export const getSuccessesText = (
+  successes: number,
+  total: number,
+  showExactResult: boolean,
+) => {
+  if (successes === 0) {
+    return 'No hits';
+  }
+  if (successes === total - 1) {
+    return `All (${successes})`;
+  }
+
+  const hits = `${successes} hit${successes > 1 ? 's' : ''}`;
+  return `${showExactResult ? 'Exactly' : 'At least'} ${hits}`;
+};
+
+export const getChanceText = (chance: number) => {
+  chance *= 100;
+
+  if (chance === 100) {
+    return '100';
+  }
+  if (chance > 99.99) {
+    return '99.99';
+  }
+  if (chance === 0) {
+    return '0';
+  }
+  if (chance < 0.01) {
+    return '0.01';
+  }
+
+  return chance.toFixed(2);
+};

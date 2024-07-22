@@ -1,4 +1,4 @@
-import React, {useCallback, useMemo, useState} from 'react';
+import React, {useCallback, useEffect, useMemo, useRef, useState} from 'react';
 import {FlatList, StyleSheet, View} from 'react-native';
 import {ListRenderItemInfo} from '@react-native/virtualized-lists/Lists/VirtualizedList';
 import {
@@ -7,21 +7,26 @@ import {
 } from '@utils/chance';
 import HitChancesItem from '@components/HitChancesItem';
 import Button from '@components/Button';
+import {ColorSet} from '@data/consts';
+import {useAppSelector} from '@hooks/storeHooks';
 
 interface HitChancesListProps {
-  dices: Dices;
+  colorSet: ColorSet;
   resultsTotal: number;
 }
 
 const HitChancesList: React.FC<HitChancesListProps> = ({
-  dices,
+  colorSet,
   resultsTotal,
 }) => {
   const [showExactResult, setShowExactResult] = useState(false);
+  const diceSet = useAppSelector(state => state.diceSet[colorSet]);
+  const listRef = useRef<FlatList>(null);
 
+  // aways calculate when opening the modal (user might open it without rolling the dice)
   const rawChancesList: number[] = useMemo(() => {
-    return calcExactSuccessChances(dices);
-  }, [dices]);
+    return calcExactSuccessChances(diceSet.dices);
+  }, [diceSet.dices]);
 
   const chancesList: number[] = useMemo(() => {
     return showExactResult
@@ -44,6 +49,10 @@ const HitChancesList: React.FC<HitChancesListProps> = ({
     [chancesList.length, resultsTotal, showExactResult],
   );
 
+  useEffect(() => {
+    listRef.current?.flashScrollIndicators();
+  }, []);
+
   return (
     <View style={styles.container}>
       <View style={styles.options}>
@@ -61,9 +70,12 @@ const HitChancesList: React.FC<HitChancesListProps> = ({
         />
       </View>
       <FlatList
+        ref={listRef}
         data={chancesList}
         renderItem={renderItem}
         style={styles.list}
+        indicatorStyle="white"
+        contentContainerStyle={styles.listContent}
       />
     </View>
   );
@@ -85,8 +97,14 @@ const styles = StyleSheet.create({
   },
   list: {
     marginTop: 20,
-    marginBottom: 30,
+    marginBottom: 10,
     overflow: 'hidden',
+    borderRadius: 5,
+    paddingVertical: 10,
+  },
+  listContent: {
+    paddingHorizontal: 10,
+    paddingBottom: 20,
   },
 });
 

@@ -13,14 +13,3 @@ type DiceConfig = {
 };
 
 type Dices = Partial<Record<Face, DiceConfig[]>>;
-
-type Results = Partial<Record<Face, number>>;
-
-type DiceData = {
-  dices: Dices;
-  results: Results;
-  rolling: boolean;
-  rollId: number;
-};
-
-type DicesColorSet = Record<ColorSet, DiceData>;

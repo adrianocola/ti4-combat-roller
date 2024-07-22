@@ -7,14 +7,23 @@ import React, {
   useState,
 } from 'react';
 import {StatusBar} from 'expo-status-bar';
-import {ScrollView, StyleSheet, useWindowDimensions, View} from 'react-native';
+import {
+  Image,
+  ScrollView,
+  StyleSheet,
+  Text,
+  useWindowDimensions,
+  View,
+} from 'react-native';
 import {useSafeAreaInsets} from 'react-native-safe-area-context';
 import * as SplashScreen from 'expo-splash-screen';
 
-import RefreshImage from '@assets/refresh.png';
+import ResetImage from '@assets/reset.png';
 import D10Image from '@assets/d10.png';
+import InfoIcon from '@assets/info.png';
 
 import colors from '@data/colors';
+import Colors from '@data/colors';
 import {BASE_SCREEN_ORDER, ColorSet} from '@data/consts';
 import ButtonImage from '@components/ButtonImage';
 import StatsModal from '@components/StatsModal';
@@ -26,6 +35,7 @@ import {arrayRotate, arraySum} from '@utils/array';
 import {useAppDispatch, useAppSelector} from '@hooks/storeHooks';
 import {reset, roll} from '@store/diceSetSlice';
 import {setSelectedColorSet} from '@store/preferencesSlice';
+import {getChanceText} from '@utils/chance';
 
 const centerScreenOrder = (
   screenOrder: ColorSet[],
@@ -74,6 +84,18 @@ const CombatRoller = () => {
     dispatch(reset({colorSet: selectedColorSet}));
   }, [dispatch, selectedColorSet]);
 
+  const onPrevPage = useCallback(() => {
+    scrollRef.current?.scrollTo({x: width, y: 0, animated: true});
+  }, [width]);
+
+  const onNextPage = useCallback(() => {
+    scrollRef.current?.scrollTo({x: 3 * width, y: 0, animated: true});
+  }, [width]);
+
+  const toggleStatsModal = useCallback(() => {
+    setStatsModalVisible(prevStatsModalVisible => !prevStatsModalVisible);
+  }, []);
+
   const resultsTotal = useMemo(() => {
     return arraySum(Object.values(dicesColorSet[selectedColorSet].results));
   }, [dicesColorSet, selectedColorSet]);
@@ -94,7 +116,7 @@ const CombatRoller = () => {
         arrayRotate(prevScreenOrder, selectedIndex - 2),
       );
     },
-    [width],
+    [width, dispatch],
   );
 
   useLayoutEffect(() => {
@@ -111,6 +133,37 @@ const CombatRoller = () => {
     <View style={styles.container}>
       <StatusBar style="light" />
       <View style={[styles.content, {paddingTop: top}]}>
+        <View style={styles.header}>
+          <Button
+            style={styles.headerButton}
+            title="◀︎"
+            onPress={onPrevPage}
+            transparent
+          />
+          <Button
+            style={styles.headerButton}
+            onPress={toggleStatsModal}
+            transparent>
+            <View style={styles.headerTextContainer}>
+              <Text style={styles.headerText}>
+                {dicesColorSet[selectedColorSet].chancesAccumulative.length
+                  ? `${getChanceText(dicesColorSet[selectedColorSet].chancesAccumulative[resultsTotal])}%`
+                  : '%'}
+              </Text>
+              <Image
+                source={InfoIcon}
+                style={styles.headerInfo}
+                tintColor={Colors.WHITE}
+              />
+            </View>
+          </Button>
+          <Button
+            style={styles.headerButton}
+            title="▶︎"
+            onPress={onNextPage}
+            transparent
+          />
+        </View>
         <ScrollView
           ref={scrollRef}
           contentOffset={{x: 2 * width, y: 0}}
@@ -133,7 +186,8 @@ const CombatRoller = () => {
             style={[styles.footerButton, styles.footerRefresh]}
             disabled={!canRoll}
             onPress={onReset}
-            image={RefreshImage}
+            image={ResetImage}
+            imageSize={26}
           />
           <Button
             style={styles.resultButton}
@@ -141,7 +195,7 @@ const CombatRoller = () => {
             titleStyle={styles.resultText}
             transparent
             disabled={diceCount === 0}
-            onPress={() => setStatsModalVisible(true)}
+            onPress={toggleStatsModal}
           />
           <ButtonImage
             style={styles.footerButton}
@@ -152,10 +206,11 @@ const CombatRoller = () => {
         </View>
       </View>
       <StatsModal
-        dices={dicesColorSet[selectedColorSet].dices}
+        colorSet={selectedColorSet}
         resultsTotal={resultsTotal}
+        diceCount={diceCount}
         visible={statsModalVisible}
-        onClose={() => setStatsModalVisible(false)}
+        onClose={toggleStatsModal}
       />
     </View>
   );
@@ -177,12 +232,35 @@ const styles = StyleSheet.create({
     width: '100%',
     alignItems: 'center',
   },
+  header: {
+    width: '100%',
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingBottom: 5,
+  },
+  headerButton: {
+    flex: 1,
+  },
+  headerTextContainer: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  headerText: {
+    color: Colors.WHITE,
+  },
+  headerInfo: {
+    width: 14,
+    height: 14,
+    marginLeft: 5,
+  },
   footer: {
     paddingTop: 15,
     width: '100%',
     borderTopWidth: StyleSheet.hairlineWidth,
     borderTopColor: colors.GRAY,
-    backgroundColor: colors.BACKGROUND_FOOTER,
+    backgroundColor: colors.BACKGROUND,
   },
   footerContent: {
     paddingBottom: 15,
@@ -197,7 +275,7 @@ const styles = StyleSheet.create({
     marginHorizontal: 20,
   },
   footerRefresh: {
-    backgroundColor: colors.BACKGROUND_FOOTER_RESET,
+    backgroundColor: colors.BACKGROUND_RESET,
   },
   resultButton: {
     flex: 1,
@@ -206,6 +284,7 @@ const styles = StyleSheet.create({
     color: colors.WHITE,
     fontSize: 32,
     fontWeight: 'bold',
+    textAlign: 'center',
   },
 });
 

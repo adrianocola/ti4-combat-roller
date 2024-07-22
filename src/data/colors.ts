@@ -3,15 +3,14 @@ import {ColorSet} from '@data/consts';
 const colors = {
   WHITE: '#fcfcfc',
   GRAY: '#c0c0c0',
-  SEPARATOR: '#08384d',
+  SEPARATOR: '#373737',
   BLACK: '#000000',
   SELECTED: '#ffba08',
 
-  BACKGROUND: '#001219',
-  BACKGROUND_BUTTON: '#011d2a',
-  BACKGROUND_FOOTER: '#000f15',
-  BACKGROUND_FOOTER_BUTTON: '#011d2a',
-  BACKGROUND_FOOTER_RESET: '#5b2727',
+  BACKGROUND: '#0e0e0e',
+  BACKGROUND_MODAL: '#161616',
+  BACKGROUND_BUTTON: '#1f1f1f',
+  BACKGROUND_RESET: '#5b2727',
 
   FACES_COLORS: {
     [ColorSet.Orange]: {

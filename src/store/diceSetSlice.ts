@@ -2,12 +2,29 @@ import type {PayloadAction} from '@reduxjs/toolkit';
 import {createSlice} from '@reduxjs/toolkit';
 import {ColorSet, MAX_DICE_SET, MAX_ROLL_MS, MIN_ROLL_MS} from '@data/consts';
 import {randomFace, randomId, randomNumber} from '@utils/random';
+import {
+  calcAccumulativeSuccessChances,
+  calcExactSuccessChances,
+} from '@utils/chance';
+
+type Results = Partial<Record<Face, number>>;
+
+export type DiceData = {
+  dices: Dices;
+  results: Results;
+  chances: number[];
+  chancesAccumulative: number[];
+  rolling: boolean;
+  rollId: number;
+};
 
 export type DiceSetState = Record<ColorSet, DiceData>;
 
 const initialDiceSetData: DiceData = {
   dices: {},
   results: {},
+  chances: [],
+  chancesAccumulative: [],
   rolling: false,
   rollId: 0,
 };
@@ -75,9 +92,12 @@ export const diceSetSlice = createSlice({
         },
       );
 
+      const chances = calcExactSuccessChances(dices);
       state[action.payload.colorSet] = {
         dices,
         results: {},
+        chances,
+        chancesAccumulative: calcAccumulativeSuccessChances(chances),
         rolling: true,
         rollId: Date.now(),
       };
