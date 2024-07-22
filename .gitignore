@@ -41,3 +41,4 @@ yarn-error.*
 
 # Secret
 service-account.json
+.env

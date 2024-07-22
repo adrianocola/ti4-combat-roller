@@ -8,7 +8,8 @@ import * as SplashScreen from 'expo-splash-screen';
 
 import CombatRoller from './src/CombatRoller';
 
-Aptabase.init('A-US-9839136162');
+// @ts-ignore
+Aptabase.init(process.env.EXPO_PUBLIC_APTABASE);
 SplashScreen.preventAutoHideAsync();
 
 const App = () => {
