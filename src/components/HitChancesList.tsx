@@ -4,11 +4,11 @@ import {ListRenderItemInfo} from '@react-native/virtualized-lists/Lists/Virtuali
 import {
   calcAccumulativeSuccessChances,
   calcExactSuccessChances,
-} from '@utils/chance';
-import HitChancesItem, {ITEM_HEIGHT} from '@components/HitChancesItem';
-import Button from '@components/Button';
-import {ColorSet} from '@data/consts';
-import {useAppSelector} from '@hooks/storeHooks';
+} from '@/utils/chance';
+import HitChancesItem, {ITEM_HEIGHT} from '@/components/HitChancesItem';
+import Button from '@/components/Button';
+import {ColorSet} from '@/data/consts';
+import {useAppSelector} from '@/hooks/storeHooks';
 
 interface HitChancesListProps {
   colorSet: ColorSet;

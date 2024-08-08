@@ -1,9 +1,9 @@
 import React, {useEffect} from 'react';
 import {StyleSheet, View} from 'react-native';
-import {ColorSet, FACES_DISPLAY, MAX_ROLL_MS} from '@data/consts';
-import DiceLine from '@components/DiceLine';
-import {finishRolling} from '@store/diceSetSlice';
-import {useAppDispatch, useAppSelector} from '@hooks/storeHooks';
+import {ColorSet, FACES_DISPLAY, MAX_ROLL_MS} from '@/data/consts';
+import DiceLine from '@/components/DiceLine';
+import {setRolling} from '@/store/diceSetSlice';
+import {useAppDispatch, useAppSelector} from '@/hooks/storeHooks';
 
 interface DiceListProps {
   colorSet: ColorSet;
@@ -19,11 +19,11 @@ const DiceList: React.FC<DiceListProps> = ({colorSet}) => {
     }
 
     const timeout = setTimeout(() => {
-      dispatch(finishRolling({colorSet}));
+      dispatch(setRolling({colorSet, rolling: false}));
     }, MAX_ROLL_MS);
 
     return () => {
-      dispatch(finishRolling({colorSet}));
+      dispatch(setRolling({colorSet, rolling: false}));
       clearTimeout(timeout);
     };
   }, [colorSet, dispatch, rollId]);

@@ -8,8 +8,8 @@ import {
   ViewStyle,
 } from 'react-native';
 import {StyleProp} from 'react-native/Libraries/StyleSheet/StyleSheet';
-import Colors from '@data/colors';
-import colors from '@data/colors';
+import Colors from '@/data/colors';
+import colors from '@/data/colors';
 
 export interface ButtonProps extends PressableProps {
   style?: StyleProp<ViewStyle>;

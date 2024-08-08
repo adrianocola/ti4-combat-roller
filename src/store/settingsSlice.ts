@@ -1,6 +1,6 @@
 import type {PayloadAction} from '@reduxjs/toolkit';
 import {createSlice} from '@reduxjs/toolkit';
-import {ColorSet} from '@data/consts';
+import {ColorSet} from '@/data/consts';
 
 export type SettingsState = {
   selectedColorSet: ColorSet;

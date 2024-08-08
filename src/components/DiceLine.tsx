@@ -1,12 +1,12 @@
 import React, {useCallback} from 'react';
 import {StyleSheet, Text, View} from 'react-native';
-import colors from '@data/colors';
-import {ColorSet, MAX_DICE_SET} from '@data/consts';
+import colors from '@/data/colors';
+import {ColorSet, MAX_DICE_SET} from '@/data/consts';
 
 import ButtonOverlay from './ButtonOverlay';
 import Dice from './Dice';
-import {useAppDispatch, useAppSelector} from '@hooks/storeHooks';
-import {addDice, removeDice} from '@store/diceSetSlice';
+import {useAppDispatch, useAppSelector} from '@/hooks/storeHooks';
+import {addDice, removeDice} from '@/store/diceSetSlice';
 
 interface Props {
   colorSet: ColorSet;

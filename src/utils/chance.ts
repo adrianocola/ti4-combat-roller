@@ -1,5 +1,5 @@
 import Big from 'big.js';
-import {FACES} from '@data/consts';
+import {FACES} from '@/data/consts';
 
 const calculateProbabilityList = (eventProbabilities: number[]): Big[] => {
   const numberOfEvents = eventProbabilities.length;

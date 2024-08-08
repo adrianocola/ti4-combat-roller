@@ -1,11 +1,7 @@
 import type {PayloadAction} from '@reduxjs/toolkit';
 import {createSlice} from '@reduxjs/toolkit';
-import {ColorSet, MAX_DICE_SET, MAX_ROLL_MS, MIN_ROLL_MS} from '@data/consts';
-import {randomFace, randomId, randomNumber} from '@utils/random';
-import {
-  calcAccumulativeSuccessChances,
-  calcExactSuccessChances,
-} from '@utils/chance';
+import {ColorSet, MAX_DICE_SET} from '@/data/consts';
+import {randomId} from '@/utils/random';
 
 type Results = Partial<Record<Face, number>>;
 
@@ -75,29 +71,20 @@ export const diceSetSlice = createSlice({
     reset: (state, action: PayloadAction<{colorSet: ColorSet}>) => {
       state[action.payload.colorSet] = initialDiceSetData;
     },
-    roll: (state, action: PayloadAction<{colorSet: ColorSet}>) => {
-      const dices: Dices = {};
-      Object.entries(state[action.payload.colorSet].dices).forEach(
-        ([face, set]) => {
-          const faceInt = parseInt(face, 10) as Face;
-          dices[faceInt] = set.map(item => {
-            const value = randomFace();
-            return {
-              ...item,
-              duration: randomNumber(MIN_ROLL_MS, MAX_ROLL_MS),
-              success: value >= faceInt,
-              face: value,
-            };
-          });
-        },
-      );
-
-      const chances = calcExactSuccessChances(dices);
+    roll: (
+      state,
+      action: PayloadAction<{
+        colorSet: ColorSet;
+        dices: Dices;
+        chances: number[];
+        chancesAccumulative: number[];
+      }>,
+    ) => {
       state[action.payload.colorSet] = {
-        dices,
+        dices: action.payload.dices,
         results: {},
-        chances,
-        chancesAccumulative: calcAccumulativeSuccessChances(chances),
+        chances: action.payload.chances,
+        chancesAccumulative: action.payload.chancesAccumulative,
         rolling: true,
         rollId: Date.now(),
       };
@@ -109,19 +96,16 @@ export const diceSetSlice = createSlice({
       state[action.payload.colorSet].results[action.payload.face] =
         (state[action.payload.colorSet].results[action.payload.face] ?? 0) + 1;
     },
-    finishRolling: (state, action: PayloadAction<{colorSet: ColorSet}>) => {
-      state[action.payload.colorSet].rolling = false;
+    setRolling: (
+      state,
+      action: PayloadAction<{colorSet: ColorSet; rolling: boolean}>,
+    ) => {
+      state[action.payload.colorSet].rolling = action.payload.rolling;
     },
   },
 });
 
-export const {
-  addDice,
-  removeDice,
-  reset,
-  roll,
-  registerSuccess,
-  finishRolling,
-} = diceSetSlice.actions;
+export const {addDice, removeDice, reset, roll, registerSuccess, setRolling} =
+  diceSetSlice.actions;
 
 export default diceSetSlice.reducer;

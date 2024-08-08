@@ -7,10 +7,10 @@ import Animated, {
 } from 'react-native-reanimated';
 import React, {useEffect} from 'react';
 import {StyleSheet, View} from 'react-native';
-import {ColorSet, FACES_LIST} from '@data/consts';
-import colors from '@data/colors';
-import {useAppDispatch, useAppSelector} from '@hooks/storeHooks';
-import {registerSuccess} from '@store/diceSetSlice';
+import {ColorSet, FACES_LIST} from '@/data/consts';
+import colors from '@/data/colors';
+import {useAppDispatch, useAppSelector} from '@/hooks/storeHooks';
+import {registerSuccess} from '@/store/diceSetSlice';
 
 const SIZE = 20;
 const FINAL_MS = 250;

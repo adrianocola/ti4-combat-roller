@@ -1,4 +1,4 @@
-import {ColorSet} from '@data/consts';
+import {ColorSet} from '@/data/consts';
 
 const colors = {
   WHITE: '#fcfcfc',

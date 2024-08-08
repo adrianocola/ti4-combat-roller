@@ -5,7 +5,7 @@ import Animated, {
 } from 'react-native-reanimated';
 import React from 'react';
 import {Pressable, StyleSheet, Text, ViewStyle} from 'react-native';
-import colors from '@data/colors';
+import colors from '@/data/colors';
 
 interface Props {
   text: string;

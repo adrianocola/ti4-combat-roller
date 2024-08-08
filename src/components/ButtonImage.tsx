@@ -1,7 +1,7 @@
 import React from 'react';
 import {Image, ImageProps} from 'react-native';
 import {ImageSourcePropType} from 'react-native/Libraries/Image/Image';
-import Button, {ButtonProps} from '@components/Button';
+import Button, {ButtonProps} from '@/components/Button';
 
 interface ButtonImageProps extends ButtonProps {
   image: ImageSourcePropType;

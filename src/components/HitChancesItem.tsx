@@ -1,7 +1,7 @@
 import React from 'react';
 import {StyleSheet, Text, View} from 'react-native';
-import Colors from '@data/colors';
-import {getChanceText, getSuccessesText} from '@utils/chance';
+import Colors from '@/data/colors';
+import {getChanceText, getSuccessesText} from '@/utils/chance';
 
 interface HitChancesItemProps {
   hits: number;

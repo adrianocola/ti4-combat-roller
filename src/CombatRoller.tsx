@@ -20,24 +20,25 @@ import * as SplashScreen from 'expo-splash-screen';
 import ResetImage from '@assets/reset.png';
 import D10Image from '@assets/d10.png';
 
-import colors from '@data/colors';
-import Colors from '@data/colors';
-import {BASE_SCREEN_ORDER, ColorSet} from '@data/consts';
-import ButtonImage from '@components/ButtonImage';
-import StatsModal from '@components/StatsModal';
-import Button from '@components/Button';
-import DiceList from '@components/DiceList';
+import colors from '@/data/colors';
+import Colors from '@/data/colors';
+import {BASE_SCREEN_ORDER, ColorSet} from '@/data/consts';
+import ButtonImage from '@/components/ButtonImage';
+import StatsModal from '@/components/StatsModal';
+import Button from '@/components/Button';
+import DiceList from '@/components/DiceList';
 import {NativeSyntheticEvent} from 'react-native/Libraries/Types/CoreEventTypes';
 import {NativeScrollEvent} from 'react-native/Libraries/Components/ScrollView/ScrollView';
-import {arrayRotate, arraySum} from '@utils/array';
-import {useAppDispatch, useAppSelector} from '@hooks/storeHooks';
-import {reset, roll} from '@store/diceSetSlice';
+import {arrayRotate, arraySum} from '@/utils/array';
+import {useAppDispatch, useAppSelector} from '@/hooks/storeHooks';
+import {reset, roll, setRolling} from '@/store/diceSetSlice';
 import {
   setSelectedColorSet,
   setShowInitialAnimation,
-} from '@store/settingsSlice';
-import {getChanceText} from '@utils/chance';
-import {store} from '@store/index';
+} from '@/store/settingsSlice';
+import {getChanceText} from '@/utils/chance';
+import {store} from '@/store';
+import {rollDices, downloadMoreRandomData} from '@/utils/dice';
 
 const centerScreenOrder = (
   screenOrder: ColorSet[],
@@ -78,8 +79,15 @@ const CombatRoller = () => {
 
   const canRoll = !dicesColorSet[selectedColorSet].rolling && diceCount !== 0;
 
-  const onRoll = useCallback(() => {
-    dispatch(roll({colorSet: selectedColorSet}));
+  const onRoll = useCallback(async () => {
+    dispatch(setRolling({colorSet: selectedColorSet, rolling: true}));
+
+    const {dices, chances, chancesAccumulative} =
+      await rollDices(selectedColorSet);
+
+    dispatch(
+      roll({colorSet: selectedColorSet, dices, chances, chancesAccumulative}),
+    );
   }, [dispatch, selectedColorSet]);
 
   const onReset = useCallback(() => {
@@ -118,6 +126,8 @@ const CombatRoller = () => {
   }, [screenOrder]); // eslint-disable-line react-hooks/exhaustive-deps
 
   useEffect(() => {
+    downloadMoreRandomData();
+
     requestAnimationFrame(() => {
       SplashScreen.hideAsync();
     });

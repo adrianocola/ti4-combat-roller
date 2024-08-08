@@ -7,10 +7,10 @@ import {
   TouchableOpacity,
   View,
 } from 'react-native';
-import Colors from '@data/colors';
-import HitChancesList from '@components/HitChancesList';
-import Button from '@components/Button';
-import {ColorSet} from '@data/consts';
+import Colors from '@/data/colors';
+import HitChancesList from '@/components/HitChancesList';
+import Button from '@/components/Button';
+import {ColorSet} from '@/data/consts';
 
 interface StatsModalPros extends ModalProps {
   colorSet: ColorSet;
