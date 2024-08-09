@@ -30,7 +30,7 @@ cd ti4-combat-roller
 npm install
 
 # Copy the .env.sample file to .env and fill in the missing fields
-cp .env.sample .env # IOS_BUNDLE_ID and ANDROID_PACKAGE are required.
+cp .env.sample .env.local # IOS_BUNDLE_ID and ANDROID_PACKAGE are required.
 
 # Run the app in the simulator
 npm run ios # or

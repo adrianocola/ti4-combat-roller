@@ -5,8 +5,7 @@ export const FACES: Face[] = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10];
 export const FACES_DISPLAY = [...FACES].splice(1).reverse(); // remove 1
 export const FACES_LIST = [...FACES, ...FACES, ...FACES];
 
-export const MIN_RANDOM_COUNT = 10;
-export const RANDOM_COUNT_FETCH_QUANTITY = 20;
+export const MIN_RANDOM_COUNT = 200;
 
 export enum ColorSet {
   Orange = 'orange',

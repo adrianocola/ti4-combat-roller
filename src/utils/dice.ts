@@ -4,7 +4,6 @@ import {
   MAX_ROLL_MS,
   MIN_RANDOM_COUNT,
   MIN_ROLL_MS,
-  RANDOM_COUNT_FETCH_QUANTITY,
 } from '@/data/consts';
 import {
   calcAccumulativeSuccessChances,
@@ -16,50 +15,12 @@ import {
   getRandomValues,
   setRandomValues,
 } from '@/services/asyncStorage';
-import {
-  fetchRandomIntegers,
-  fetchRandomIntegersLegacy,
-} from '@/services/randomOrg';
+import {fetchRandomIntegers} from '@/data/api';
 
 // control if the download is already in progress
 const downloadingRef = {downloading: false};
 const getDiceCount = (dices: Dices): number => {
   return Object.values(dices).reduce((a, set) => a + set.length, 0);
-};
-
-const tryToFetchRandomIntegers = async (): Promise<number[]> => {
-  try {
-    return fetchRandomIntegers(RANDOM_COUNT_FETCH_QUANTITY);
-  } catch (e) {
-    console.error('fetchRandomIntegers error', e);
-  }
-
-  return [];
-};
-
-const tryToFetchRandomIntegersLegacy = async (): Promise<number[]> => {
-  try {
-    return fetchRandomIntegersLegacy(RANDOM_COUNT_FETCH_QUANTITY);
-  } catch (e) {
-    console.error('fetchRandomIntegersLegacy error', e);
-  }
-
-  return [];
-};
-
-const updateRandomData = async (newValues: number[]) => {
-  if (!newValues) {
-    return;
-  }
-
-  try {
-    const existingValues = await getRandomValues();
-
-    const finalValues = [...existingValues, ...newValues];
-    await setRandomValues(finalValues);
-  } catch (e) {
-    console.error('updateRandomData error', e);
-  }
 };
 
 // Download more random data from the API (if needed)
@@ -71,12 +32,15 @@ export const downloadMoreRandomData = async () => {
 
   downloadingRef.downloading = true;
 
-  let newValues: number[] = await tryToFetchRandomIntegers();
-  if (!newValues.length) {
-    newValues = await tryToFetchRandomIntegersLegacy();
-  }
+  try {
+    const newValues = await fetchRandomIntegers();
+    const existingValues = await getRandomValues();
 
-  await updateRandomData(newValues);
+    const finalValues = [...existingValues, ...newValues];
+    await setRandomValues(finalValues);
+  } catch (e) {
+    console.error('downloadMoreRandomData error', e);
+  }
 
   downloadingRef.downloading = false;
 };
