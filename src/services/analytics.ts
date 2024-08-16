@@ -1,20 +1,31 @@
 import Aptabase from '@aptabase/react-native';
 
+// @ts-ignore
+const aptabaseKey = process.env.EXPO_PUBLIC_APTABASE;
+
 export enum Events {
   OPEN = 'open',
   ROLL = 'roll',
   RESET = 'reset',
-  STATS = 'stats',
+  VIEW_STATS = 'viewSstats',
+  CHANGE_SET = 'changeSet',
 }
 
 export const initAnalytics = () => {
-  // @ts-ignore
-  Aptabase.init(process.env.EXPO_PUBLIC_APTABASE);
+  if (!aptabaseKey) {
+    return;
+  }
+
+  Aptabase.init(aptabaseKey);
 };
 
 export const trackEvent = (
-  event: string,
-  props: Record<string, string | number | boolean>,
+  event: Events,
+  props?: Record<string, string | number | boolean>,
 ) => {
+  if (!aptabaseKey) {
+    return;
+  }
+
   Aptabase.trackEvent(event, props);
 };

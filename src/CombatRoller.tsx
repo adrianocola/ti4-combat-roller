@@ -38,7 +38,8 @@ import {
 } from '@/store/settingsSlice';
 import {getChanceText} from '@/utils/chance';
 import {store} from '@/store';
-import {rollDices, downloadMoreRandomData} from '@/utils/dice';
+import {downloadMoreRandomData, rollDices} from '@/utils/dice';
+import {Events, trackEvent} from '@/services/analytics';
 
 const centerScreenOrder = (
   screenOrder: ColorSet[],
@@ -91,10 +92,14 @@ const CombatRoller = () => {
   }, [dispatch, selectedColorSet]);
 
   const onReset = useCallback(() => {
+    trackEvent(Events.RESET);
+
     dispatch(reset({colorSet: selectedColorSet}));
   }, [dispatch, selectedColorSet]);
 
   const toggleStatsModal = useCallback(() => {
+    trackEvent(Events.VIEW_STATS);
+
     setStatsModalVisible(prevStatsModalVisible => !prevStatsModalVisible);
   }, []);
 
@@ -113,6 +118,8 @@ const CombatRoller = () => {
         return;
       }
 
+      trackEvent(Events.CHANGE_SET, {colorSet: newColorSet});
+
       dispatch(setSelectedColorSet({selectedColorSet: newColorSet}));
       setScreenOrder(prevScreenOrder =>
         arrayRotate(prevScreenOrder, selectedIndex - 2),
@@ -126,12 +133,18 @@ const CombatRoller = () => {
   }, [screenOrder]); // eslint-disable-line react-hooks/exhaustive-deps
 
   useEffect(() => {
+    trackEvent(Events.OPEN, {
+      colorSet: store.getState().settings.selectedColorSet,
+    });
+
     downloadMoreRandomData();
 
     requestAnimationFrame(() => {
       SplashScreen.hideAsync();
     });
+  }, []);
 
+  useEffect(() => {
     // show litte animation the first time the user opens the app,
     // so it knows that there are other dice set colors to choose from
     setTimeout(() => {

@@ -16,6 +16,8 @@ import {
   setRandomValues,
 } from '@/services/asyncStorage';
 import {fetchRandomIntegers} from '@/data/api';
+import {Events, trackEvent} from '@/services/analytics';
+import Big from 'big.js';
 
 // control if the download is already in progress
 const downloadingRef = {downloading: false};
@@ -63,6 +65,33 @@ const getRandomFaces = async (quantity: number): Promise<Face[]> => {
   return [...trueRandomValues, ...fillInRandomValues] as Face[];
 };
 
+const trackDiceRollEvent = (dices: Dices, chancesAccumulative: number[]) => {
+  const eventData: Record<string, number> = {
+    successCount: 0,
+    diceCount: 0,
+  };
+
+  Object.entries(dices).forEach(([face, set]) => {
+    let faceSuccessCount = 0;
+    eventData[`faceCount${face}`] = set.length;
+    set.forEach(item => {
+      eventData[`resultCount${face}`] =
+        (eventData[`resultCount${face}`] ?? 0) + 1;
+      faceSuccessCount += item.success ? 1 : 0;
+    });
+    eventData.successCount += faceSuccessCount;
+    eventData.diceCount += set.length;
+    eventData[`faceSuccess${face}`] = faceSuccessCount;
+  });
+
+  eventData.chances = Big(chancesAccumulative[eventData.successCount])
+    .times(100)
+    .round(2)
+    .toNumber();
+
+  trackEvent(Events.ROLL, eventData);
+};
+
 export const rollDices = async (colorSet: ColorSet) => {
   const state = store.getState().diceSet;
   const quantity = getDiceCount(state[colorSet].dices);
@@ -85,6 +114,8 @@ export const rollDices = async (colorSet: ColorSet) => {
 
   const chances = calcExactSuccessChances(dices);
   const chancesAccumulative = calcAccumulativeSuccessChances(chances);
+
+  trackDiceRollEvent(dices, chancesAccumulative);
 
   return {dices, chances, chancesAccumulative};
 };
