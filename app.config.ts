@@ -1,16 +1,13 @@
 import {ConfigContext, ExpoConfig} from '@expo/config';
-import * as dotenv from 'dotenv';
-
-dotenv.config();
 
 export default ({config}: ConfigContext): ExpoConfig => ({
   ...config,
   // @ts-ignore
-  name: process.env.NAME,
+  name: process.env.NAME ?? 'TI4 Combat Roller',
   // @ts-ignore
-  slug: process.env.SLUG,
+  slug: process.env.SLUG ?? 'ti4-combat-roller',
   // @ts-ignore
-  version: process.env.VERSION,
+  version: process.env.VERSION ?? '1.0.0',
   orientation: 'portrait',
   icon: './assets/icon.png',
   userInterfaceStyle: 'dark',

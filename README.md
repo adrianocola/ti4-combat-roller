@@ -13,7 +13,7 @@ Details and How to Use:
 - The app displays each die result, the number of hits in a set, and the total hits.
 - Tap the hits number to view a table showing all hit probabilities based on the rolled dice.
 - Swipe left or right to choose between 5 different color schemes.
-- Each color scheme has its own set of dice, useful for rolling both defense and attack on the same device.
+- Each color scheme has its own set of dice, which are useful for rolling both defense and attack on the same device.
 
 ### Building the App
 
@@ -28,9 +28,6 @@ git clone https://github.com/adrianocola/ti4-combat-roller
 # Change to the project directory and install dependencies
 cd ti4-combat-roller
 npm install
-
-# Copy the .env.sample file to .env and fill in the missing fields
-cp .env.sample .env.local # IOS_BUNDLE_ID and ANDROID_PACKAGE are required.
 
 # Run the app in the simulator
 npm run ios # or
