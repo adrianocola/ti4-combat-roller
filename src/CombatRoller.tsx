@@ -22,7 +22,7 @@ import D10Image from '@assets/d10.png';
 
 import colors from '@/data/colors';
 import Colors from '@/data/colors';
-import {BASE_SCREEN_ORDER, ColorSet} from '@/data/consts';
+import {BASE_SCREEN_ORDER, ColorSet, MAX_ROLL_MS} from '@/data/consts';
 import ButtonImage from '@/components/ButtonImage';
 import StatsModal from '@/components/StatsModal';
 import Button from '@/components/Button';
@@ -81,6 +81,9 @@ const CombatRoller = () => {
   const canRoll = !dicesColorSet[selectedColorSet].rolling && diceCount !== 0;
 
   const onRoll = useCallback(async () => {
+    const rolling = store.getState().diceSet[selectedColorSet]?.rolling;
+    if (rolling) return;
+
     dispatch(setRolling({colorSet: selectedColorSet, rolling: true}));
 
     const {dices, chances, chancesAccumulative} =
@@ -89,6 +92,11 @@ const CombatRoller = () => {
     dispatch(
       roll({colorSet: selectedColorSet, dices, chances, chancesAccumulative}),
     );
+
+    // No need to clean up this timeout, it must always update the state, even if the component is unmounted
+    setTimeout(() => {
+      dispatch(setRolling({colorSet: selectedColorSet, rolling: false}));
+    }, MAX_ROLL_MS);
   }, [dispatch, selectedColorSet]);
 
   const onReset = useCallback(() => {
