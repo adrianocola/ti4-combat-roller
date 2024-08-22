@@ -29,6 +29,12 @@ git clone https://github.com/adrianocola/ti4-combat-roller
 cd ti4-combat-roller
 npm install
 
+# Copy the app.json.sample file to app.json and fill in the required fields
+cp app.json.sample app.json
+
+# Copy the .env.sample file to .env.local and fill in the required fields
+cp .env.sample .env.local
+
 # Run the app in the simulator
 npm run ios # or
 npm run android

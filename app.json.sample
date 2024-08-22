@@ -1,0 +1,15 @@
+{
+  "expo": {
+    "owner": "****",
+    "name": "****",
+    "slug": "****",
+    "version": "1.0.0",
+    "runtimeVersion": "1.0.0",
+    "ios": {
+      "bundleIdentifier": "****"
+    },
+    "android": {
+      "package": "****"
+    }
+  }
+}

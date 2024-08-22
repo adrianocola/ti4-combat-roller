@@ -3,11 +3,13 @@ import {ConfigContext, ExpoConfig} from '@expo/config';
 export default ({config}: ConfigContext): ExpoConfig => ({
   ...config,
   // @ts-ignore
-  name: process.env.NAME ?? 'TI4 Combat Roller',
+  owner: config?.owner ?? process.env.OWNER ?? 'adrianocola',
   // @ts-ignore
-  slug: process.env.SLUG ?? 'ti4-combat-roller',
+  name: config?.name ?? process.env.NAME ?? 'TI4 Combat Roller',
   // @ts-ignore
-  version: process.env.VERSION ?? '1.0.0',
+  slug: config?.slug ?? process.env.SLUG ?? 'ti4-combat-roller',
+  // @ts-ignore
+  version: config?.version ?? process.env.VERSION ?? '1.0.0',
   orientation: 'portrait',
   icon: './assets/icon.png',
   userInterfaceStyle: 'dark',
@@ -16,11 +18,11 @@ export default ({config}: ConfigContext): ExpoConfig => ({
     resizeMode: 'contain',
     backgroundColor: '#161616',
   },
-  assetBundlePatterns: ['**/*'],
   ios: {
     supportsTablet: true,
-    // @ts-ignore
-    bundleIdentifier: process.env.IOS_BUNDLE_ID,
+    bundleIdentifier:
+      // @ts-ignore
+      config?.ios?.bundleIdentifier ?? process.env.IOS_BUNDLE_ID,
     privacyManifests: {
       NSPrivacyAccessedAPITypes: [
         {
@@ -36,16 +38,23 @@ export default ({config}: ConfigContext): ExpoConfig => ({
       backgroundColor: '#161616',
     },
     // @ts-ignore
-    package: process.env.ANDROID_PACKAGE,
+    package: config?.android?.package ?? process.env.ANDROID_PACKAGE,
     permissions: ['android.permission.INTERNET'],
   },
   web: {
     favicon: './assets/favicon.png',
   },
+  runtimeVersion:
+    // @ts-ignore
+    config?.runtimeVersion ?? process.env.RUNTIME_VERSION ?? '1.0.0',
   extra: {
     eas: {
       // @ts-ignore
-      projectId: process.env.EAS_PROJECT_ID,
+      projectId: config?.extra?.eas?.projectId ?? process.env.EAS_PROJECT_ID,
     },
+  },
+  updates: {
+    // @ts-ignore
+    url: config?.updates?.url ?? process.env.UPDATE_URL,
   },
 });

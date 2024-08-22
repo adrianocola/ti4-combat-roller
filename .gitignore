@@ -6,6 +6,7 @@ node_modules/
 # Expo
 .expo/
 eas.json
+app.json
 dist/
 web-build/
 ios/
