@@ -38,9 +38,7 @@ const Dice: React.FC<DiceProps> = ({colorSet, targetFace, dice}) => {
   const dispatch = useAppDispatch();
 
   useEffect(() => {
-    if (!rollId) {
-      return;
-    }
+    if (!rollId) return;
 
     const {face, duration, success} = dice;
     stylePos.value = withSequence(

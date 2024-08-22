@@ -44,9 +44,7 @@ export const diceSetSlice = createSlice({
       const dices =
         state[action.payload.colorSet].dices[action.payload.face] ?? [];
 
-      if (dices.length >= MAX_DICE_SET) {
-        return;
-      }
+      if (dices.length >= MAX_DICE_SET) return;
 
       dices.push({
         id: randomId(),

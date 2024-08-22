@@ -28,9 +28,7 @@ const getDiceCount = (dices: Dices): number => {
 // Download more random data from the API (if needed)
 export const downloadMoreRandomData = async () => {
   const randomCount = await getRandomCount();
-  if (downloadingRef.downloading || randomCount > MIN_RANDOM_COUNT) {
-    return;
-  }
+  if (downloadingRef.downloading || randomCount > MIN_RANDOM_COUNT) return;
 
   downloadingRef.downloading = true;
 

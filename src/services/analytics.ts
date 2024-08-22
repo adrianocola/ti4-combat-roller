@@ -12,9 +12,7 @@ export enum Events {
 }
 
 export const initAnalytics = () => {
-  if (!aptabaseKey) {
-    return;
-  }
+  if (!aptabaseKey) return;
 
   Aptabase.init(aptabaseKey);
 };
@@ -23,9 +21,7 @@ export const trackEvent = (
   event: Events,
   props?: Record<string, string | number | boolean>,
 ) => {
-  if (!aptabaseKey) {
-    return;
-  }
+  if (!aptabaseKey) return;
 
   Aptabase.trackEvent(event, props);
 };
