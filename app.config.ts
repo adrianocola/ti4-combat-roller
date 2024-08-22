@@ -41,9 +41,6 @@ export default ({config}: ConfigContext): ExpoConfig => ({
     package: config?.android?.package ?? process.env.ANDROID_PACKAGE,
     permissions: ['android.permission.INTERNET'],
   },
-  web: {
-    favicon: './assets/favicon.png',
-  },
   runtimeVersion:
     // @ts-ignore
     config?.runtimeVersion ?? process.env.RUNTIME_VERSION ?? '1.0.0',
