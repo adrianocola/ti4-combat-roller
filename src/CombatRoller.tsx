@@ -5,6 +5,7 @@ import {Events, trackEvent} from '@/services/analytics';
 import RollBar from '@/components/RollBar';
 import DiceSets from '@/components/DiceSets';
 import Header from '@/components/Header';
+import InstallPrompt from '@/components/InstallPrompt';
 import {emitChangeDiceSet} from '@/services/diceSetEvents';
 
 const CombatRoller: React.FC = () => {
@@ -43,6 +44,7 @@ const CombatRoller: React.FC = () => {
       <footer className="w-full bg-app-bg pt-2 sm:pt-[15px] max-w-[900px] pb-[calc(env(safe-area-inset-bottom)+6px)]">
         <RollBar />
       </footer>
+      <InstallPrompt />
     </div>
   );
 };
