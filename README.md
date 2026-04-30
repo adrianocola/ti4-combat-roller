@@ -38,4 +38,8 @@ cp .env.sample .env.local
 pnpm dev      # start Vite dev server (http://localhost:5173)
 ```
 
-The repo is a pnpm workspace; the optional `workers/` package contains a Cloudflare Worker that serves random integers consumed by the app when `VITE_PUBLIC_API_ENDPOINT` is set.
+### Random integers API (optional)
+
+`netlify/functions/random.ts` is a Netlify Function that proxies [random.org](https://api.random.org)'s `generateIntegers` endpoint. The app calls it via `VITE_PUBLIC_API_ENDPOINT` (default `/api/random`) to top up its local cache of random faces; if the endpoint is unset, the upstream is unreachable, or the cache runs out, the app falls back to `Math.random()`.
+
+To enable: set the `RANDOMORG_API_KEY` env var in Netlify (Site settings → Environment) and run `netlify dev` locally to test the function.
