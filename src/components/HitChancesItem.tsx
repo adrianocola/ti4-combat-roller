@@ -1,65 +1,52 @@
 import React from 'react';
-import {StyleSheet, Text, View} from 'react-native';
-import Colors from '@/data/colors';
-import {getChanceText, getSuccessesText} from '@/utils/chance';
+import {getChanceText} from '@/utils/chance';
 
 interface HitChancesItemProps {
   hits: number;
-  chance: number;
+  exactChance: number;
+  accChance: number;
   total: number;
   currentResult: number;
-  showExactResult: boolean;
 }
 
-export const ITEM_HEIGHT = 20;
+export const ITEM_HEIGHT = 28;
+
+const getHitsLabel = (hits: number, total: number) => {
+  if (hits === 0) return 'No hits';
+  if (hits === total - 1) return `All (${hits})`;
+  return `${hits} hit${hits > 1 ? 's' : ''}`;
+};
 
 const HitChancesItem: React.FC<HitChancesItemProps> = ({
   hits,
-  chance,
+  exactChance,
+  accChance,
   total,
   currentResult,
-  showExactResult,
 }) => {
+  const isCurrent = currentResult === hits;
+  const baseText = isCurrent ? 'text-app-selected font-bold' : 'text-app-white';
   return (
-    <View style={[styles.listItem]}>
-      <Text
-        style={[
-          styles.listItemText,
-          currentResult === hits && styles.currentResult,
-        ]}>
-        {getSuccessesText(hits, total, showExactResult)}
-      </Text>
-      <Text
-        style={[
-          styles.listItemText,
-          currentResult === hits && styles.currentResult,
-        ]}>
-        {getChanceText(chance)} %
-      </Text>
-    </View>
+    <div className="grid grid-cols-3 items-center rounded-[3px] border-[0.5px] border-app-gray-dark bg-app-button px-2 my-[3px] text-sm h-[28px]">
+      <span className={`${baseText} text-left`}>
+        {getHitsLabel(hits, total)}
+      </span>
+      {hits === 0 || hits === total - 1 ? (
+        <span className={`${baseText} text-right tabular-nums col-span-2`}>
+          {getChanceText(exactChance)}%
+        </span>
+      ) : (
+        <>
+          <span className={`${baseText} text-right tabular-nums`}>
+            {getChanceText(accChance)}%
+          </span>
+          <span className={`${baseText} text-right tabular-nums`}>
+            {getChanceText(exactChance)}%
+          </span>
+        </>
+      )}
+    </div>
   );
 };
-
-const styles = StyleSheet.create({
-  listItem: {
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    flexDirection: 'row',
-    height: ITEM_HEIGHT,
-    marginVertical: 3,
-    paddingHorizontal: 5,
-    borderRadius: 3,
-    borderColor: Colors.GRAY_DARK,
-    borderWidth: StyleSheet.hairlineWidth,
-    backgroundColor: Colors.BACKGROUND_BUTTON,
-  },
-  listItemText: {
-    color: Colors.WHITE,
-  },
-  currentResult: {
-    fontWeight: 'bold',
-    color: Colors.SELECTED,
-  },
-});
 
 export default React.memo(HitChancesItem);

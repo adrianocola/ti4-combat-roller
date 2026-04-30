@@ -1,26 +1,26 @@
 import React from 'react';
-import {Image, ImageProps} from 'react-native';
-import {ImageSourcePropType} from 'react-native/Libraries/Image/Image';
 import Button, {ButtonProps} from '@/components/Button';
 
 interface ButtonImageProps extends ButtonProps {
-  image: ImageSourcePropType;
-  imageProps?: ImageProps;
+  image: string;
   imageSize?: number;
+  imageAlt?: string;
 }
 
 const ButtonImage: React.FC<ButtonImageProps> = ({
   image,
-  imageProps,
   imageSize = 26,
+  imageAlt = '',
   ...props
 }) => {
   return (
     <Button {...props}>
-      <Image
-        {...imageProps}
-        source={image}
-        style={[{width: imageSize, height: imageSize}, imageProps?.style]}
+      <img
+        src={image}
+        alt={imageAlt}
+        draggable={false}
+        style={{width: imageSize, height: imageSize}}
+        className="block mx-auto"
       />
     </Button>
   );

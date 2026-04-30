@@ -5,11 +5,8 @@ import React, {
   useRef,
   useState,
 } from 'react';
-import {ScrollView, useWindowDimensions, View} from 'react-native';
 import DiceList from '@/components/DiceList';
 import {BASE_SCREEN_ORDER, ColorSet} from '@/data/consts';
-import {NativeSyntheticEvent} from 'react-native/Libraries/Types/CoreEventTypes';
-import {NativeScrollEvent} from 'react-native/Libraries/Components/ScrollView/ScrollView';
 import {Events, trackEvent} from '@/services/analytics';
 import {
   setSelectedColorSet,
@@ -18,6 +15,10 @@ import {
 import {arrayRotate} from '@/utils/array';
 import {store} from '@/store';
 import {useAppDispatch, useAppSelector} from '@/hooks/storeHooks';
+import {
+  CHANGE_DICE_SET_EVENT,
+  type ChangeDiceSetDelta,
+} from '@/services/diceSetEvents';
 
 const centerScreenOrder = (
   screenOrder: ColorSet[],
@@ -27,9 +28,8 @@ const centerScreenOrder = (
   return arrayRotate(screenOrder, selectedIndex - 2);
 };
 
-const DiceSets = () => {
+const DiceSets: React.FC = () => {
   const dispatch = useAppDispatch();
-  const {width} = useWindowDimensions();
   const selectedColorSet = useAppSelector(
     state => state.settings.selectedColorSet,
   );
@@ -37,69 +37,134 @@ const DiceSets = () => {
     centerScreenOrder(BASE_SCREEN_ORDER, selectedColorSet),
   );
 
-  const scrollRef = useRef<ScrollView>(null);
+  const scrollRef = useRef<HTMLDivElement>(null);
   const selectedColorSetRef = useRef(selectedColorSet);
   const screenOrderRef = useRef(screenOrder);
-
-  selectedColorSetRef.current = selectedColorSet;
-  screenOrderRef.current = screenOrder;
-
-  const onMomentumScrollEnd = useCallback(
-    (event: NativeSyntheticEvent<NativeScrollEvent>) => {
-      const selectedIndex = Math.round(
-        event.nativeEvent.contentOffset.x / width,
-      );
-
-      const newColorSet = screenOrderRef.current?.[selectedIndex];
-      if (newColorSet === selectedColorSetRef.current) return;
-
-      trackEvent(Events.CHANGE_SET, {colorSet: newColorSet});
-
-      dispatch(setSelectedColorSet({selectedColorSet: newColorSet}));
-      setScreenOrder(prevScreenOrder =>
-        arrayRotate(prevScreenOrder, selectedIndex - 2),
-      );
-    },
-    [width, dispatch],
-  );
-
-  useLayoutEffect(() => {
-    scrollRef.current?.scrollTo({x: 2 * width, y: 0, animated: false});
-  }, [screenOrder]); // eslint-disable-line react-hooks/exhaustive-deps
+  const widthRef = useRef(0);
+  const userInteractedRef = useRef(false);
 
   useEffect(() => {
-    // show litte animation the first time the user opens the app,
-    // so it knows that there are other dice set colors to choose from
+    selectedColorSetRef.current = selectedColorSet;
+    screenOrderRef.current = screenOrder;
+  });
+
+  const onScrollEnd = useCallback(() => {
+    const el = scrollRef.current;
+    if (!el || !widthRef.current) return;
+    if (!userInteractedRef.current) return;
+    userInteractedRef.current = false;
+
+    const selectedIndex = Math.round(el.scrollLeft / widthRef.current);
+    const newColorSet = screenOrderRef.current?.[selectedIndex];
+    if (!newColorSet || newColorSet === selectedColorSetRef.current) return;
+
+    trackEvent(Events.CHANGE_SET, {colorSet: newColorSet});
+
+    dispatch(setSelectedColorSet({selectedColorSet: newColorSet}));
+    setScreenOrder(prev => arrayRotate(prev, selectedIndex - 2));
+  }, [dispatch]);
+
+  useLayoutEffect(() => {
+    const el = scrollRef.current;
+    if (!el) return;
+    const measure = () => {
+      widthRef.current = el.clientWidth;
+      el.scrollTo({left: 2 * el.clientWidth, behavior: 'instant'});
+    };
+    measure();
+    const observer = new ResizeObserver(measure);
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, [screenOrder]);
+
+  useEffect(() => {
+    const el = scrollRef.current;
+    if (!el) return;
+
+    const onPointerDown = () => {
+      userInteractedRef.current = true;
+    };
+    const onWheel = () => {
+      userInteractedRef.current = true;
+    };
+
+    let scrollTimeout: ReturnType<typeof setTimeout> | undefined;
+    const onScrollEndPolyfill = () => {
+      if (scrollTimeout) clearTimeout(scrollTimeout);
+      scrollTimeout = setTimeout(onScrollEnd, 120);
+    };
+
+    el.addEventListener('pointerdown', onPointerDown);
+    el.addEventListener('wheel', onWheel, {passive: true});
+
+    const supportsScrollEnd = 'onscrollend' in window;
+    if (supportsScrollEnd) {
+      el.addEventListener('scrollend', onScrollEnd);
+    } else {
+      el.addEventListener('scroll', onScrollEndPolyfill, {passive: true});
+    }
+
+    return () => {
+      el.removeEventListener('pointerdown', onPointerDown);
+      el.removeEventListener('wheel', onWheel);
+      el.removeEventListener('scrollend', onScrollEnd);
+      el.removeEventListener('scroll', onScrollEndPolyfill);
+      if (scrollTimeout) clearTimeout(scrollTimeout);
+    };
+  }, [onScrollEnd]);
+
+  useEffect(() => {
+    if (selectedColorSet === screenOrderRef.current[2]) return;
+    setScreenOrder(centerScreenOrder(BASE_SCREEN_ORDER, selectedColorSet));
+  }, [selectedColorSet]);
+
+  useEffect(() => {
+    const onChange = (e: Event) => {
+      const delta = (e as CustomEvent<ChangeDiceSetDelta>).detail;
+      const el = scrollRef.current;
+      if (!el || !widthRef.current) return;
+      const currentIndex = Math.round(el.scrollLeft / widthRef.current);
+      const targetIndex = currentIndex + delta;
+      if (targetIndex < 0 || targetIndex >= screenOrderRef.current.length)
+        return;
+      userInteractedRef.current = true;
+      el.scrollTo({
+        left: targetIndex * widthRef.current,
+        behavior: 'smooth',
+      });
+    };
+    window.addEventListener(CHANGE_DICE_SET_EVENT, onChange);
+    return () => window.removeEventListener(CHANGE_DICE_SET_EVENT, onChange);
+  }, []);
+
+  useEffect(() => {
     setTimeout(() => {
       const showInitialAnimation =
         store.getState().settings.showInitialAnimation;
-
       if (!showInitialAnimation) return;
+      const el = scrollRef.current;
+      if (!el) return;
 
       store.dispatch(setShowInitialAnimation({showInitialAnimation: false}));
-      scrollRef.current?.scrollTo({x: 2 * width + 70, y: 0, animated: true});
+      el.scrollTo({left: 2 * el.clientWidth + 70, behavior: 'smooth'});
       setTimeout(() => {
-        scrollRef.current?.scrollTo({x: 2 * width, y: 0, animated: true});
+        el.scrollTo({left: 2 * el.clientWidth, behavior: 'smooth'});
       }, 600);
     }, 500);
-  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+  }, []);
 
   return (
-    <ScrollView
+    <div
       ref={scrollRef}
-      contentOffset={{x: 2 * width, y: 0}}
-      horizontal
-      pagingEnabled
-      decelerationRate="fast"
-      bounces={false}
-      showsHorizontalScrollIndicator={false}
-      onMomentumScrollEnd={onMomentumScrollEnd}>
+      className="flex flex-row w-full h-full overflow-x-auto overflow-y-hidden no-scrollbar snap-x snap-mandatory [scroll-behavior:auto]">
       {screenOrder.map(colorSet => (
-        <View key={colorSet} style={{width}}>
-          <DiceList colorSet={colorSet as ColorSet} />
-        </View>
+        <div
+          key={colorSet}
+          className="shrink-0 w-full h-full snap-center snap-always">
+          <DiceList colorSet={colorSet} />
+        </div>
       ))}
-    </ScrollView>
+    </div>
   );
 };
 

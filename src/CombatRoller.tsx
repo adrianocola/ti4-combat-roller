@@ -1,61 +1,50 @@
 import React, {useEffect} from 'react';
-import {StatusBar} from 'expo-status-bar';
-import {InteractionManager, StyleSheet, View} from 'react-native';
-import {useSafeAreaInsets} from 'react-native-safe-area-context';
-import * as SplashScreen from 'expo-splash-screen';
-
-import colors from '@/data/colors';
 import {store} from '@/store';
 import {downloadMoreRandomData} from '@/utils/dice';
 import {Events, trackEvent} from '@/services/analytics';
 import RollBar from '@/components/RollBar';
 import DiceSets from '@/components/DiceSets';
+import Header from '@/components/Header';
+import {emitChangeDiceSet} from '@/services/diceSetEvents';
 
-const CombatRoller = () => {
-  const {top, bottom} = useSafeAreaInsets();
-
+const CombatRoller: React.FC = () => {
   useEffect(() => {
     trackEvent(Events.OPEN, {
       colorSet: store.getState().settings.selectedColorSet,
     });
-
     downloadMoreRandomData();
+  }, []);
 
-    InteractionManager.runAfterInteractions(() => {
-      SplashScreen.hideAsync();
-    });
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      if (
+        e.target instanceof HTMLInputElement ||
+        e.target instanceof HTMLTextAreaElement
+      )
+        return;
+      if (e.key === 'ArrowRight') {
+        e.preventDefault();
+        emitChangeDiceSet(1);
+      } else if (e.key === 'ArrowLeft') {
+        e.preventDefault();
+        emitChangeDiceSet(-1);
+      }
+    };
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
   }, []);
 
   return (
-    <View style={styles.container}>
-      <StatusBar style="light" />
-      <View style={[styles.content, {paddingTop: top}]}>
+    <div className="flex flex-col items-center w-full h-full bg-app-bg">
+      <Header />
+      <main className="flex-1 w-full flex items-center justify-center min-h-0 max-w-[900px]">
         <DiceSets />
-      </View>
-      <View style={[styles.footer, {paddingBottom: bottom}]}>
+      </main>
+      <footer className="w-full bg-app-bg pt-2 sm:pt-[15px] max-w-[900px] pb-[calc(env(safe-area-inset-bottom)+6px)]">
         <RollBar />
-      </View>
-    </View>
+      </footer>
+    </div>
   );
 };
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: colors.BACKGROUND,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  content: {
-    flex: 1,
-    width: '100%',
-    alignItems: 'center',
-  },
-  footer: {
-    paddingTop: 15,
-    width: '100%',
-    backgroundColor: colors.BACKGROUND,
-  },
-});
 
 export default CombatRoller;

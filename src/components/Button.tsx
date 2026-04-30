@@ -1,76 +1,42 @@
 import React from 'react';
-import {
-  Pressable,
-  PressableProps,
-  StyleSheet,
-  Text,
-  TextStyle,
-  ViewStyle,
-} from 'react-native';
-import {StyleProp} from 'react-native/Libraries/StyleSheet/StyleSheet';
-import Colors from '@/data/colors';
-import colors from '@/data/colors';
 
-export interface ButtonProps extends PressableProps {
-  style?: StyleProp<ViewStyle>;
+export interface ButtonProps extends Omit<
+  React.ButtonHTMLAttributes<HTMLButtonElement>,
+  'title'
+> {
   title?: string | number;
-  titleStyle?: StyleProp<TextStyle>;
   transparent?: boolean;
+  titleClassName?: string;
 }
 
 const Button: React.FC<ButtonProps> = ({
   disabled,
-  style,
+  className = '',
   title,
-  titleStyle,
   transparent,
+  titleClassName = '',
   children,
   ...props
 }) => {
+  const base = transparent
+    ? 'rounded-md px-2.5 py-1 transition-opacity active:opacity-50 disabled:opacity-25'
+    : 'rounded-md px-2.5 py-1 bg-app-button border border-app-white/30 transition-opacity active:opacity-50 disabled:opacity-25';
+
   return (
-    <Pressable
+    <button
       {...props}
       disabled={disabled}
-      style={({pressed}) => [
-        styles.button,
-        transparent && styles.transparent,
-        [...(Array.isArray(style) ? style : [style])],
-        pressed && styles.pressed,
-        disabled && styles.disabled,
-      ]}>
+      className={`${base} ${className}`.trim()}>
       {title !== undefined ? (
-        <Text style={[styles.title, titleStyle]}>{title}</Text>
+        <span
+          className={`text-app-white font-bold text-center block ${titleClassName}`.trim()}>
+          {title}
+        </span>
       ) : (
         children
       )}
-    </Pressable>
+    </button>
   );
 };
-
-const styles = StyleSheet.create({
-  button: {
-    backgroundColor: colors.BACKGROUND_BUTTON,
-    borderRadius: 5,
-    paddingVertical: 5,
-    paddingHorizontal: 10,
-    borderColor: colors.WHITE,
-    borderWidth: StyleSheet.hairlineWidth,
-  },
-  transparent: {
-    borderWidth: 0,
-    backgroundColor: undefined,
-  },
-  disabled: {
-    opacity: 0.25,
-  },
-  pressed: {
-    opacity: 0.5,
-  },
-  title: {
-    textAlign: 'center',
-    color: Colors.WHITE,
-    fontWeight: 'bold',
-  },
-});
 
 export default React.memo(Button);

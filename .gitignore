@@ -3,27 +3,14 @@
 # dependencies
 node_modules/
 
-# Expo
-.expo/
-eas.json
-app.json
+# build output
 dist/
-web-build/
-ios/
-android/
+*.tsbuildinfo
 
-# Native
-*.orig.*
-*.jks
-*.p8
-*.p12
-*.key
-*.mobileprovision
+# Vite cache
+.vite/
 
-# Metro
-.metro-health-check*
-
-# debug
+# debug logs
 npm-debug.*
 yarn-debug.*
 yarn-error.*
@@ -36,12 +23,10 @@ pnpm-debug.log*
 # local env files
 .env*.local
 
-# typescript
-*.tsbuildinfo
-
 # IDE
 .idea
+.vscode
 
-# Secret
+# Secrets
 service-account.json
 .env

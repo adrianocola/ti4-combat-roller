@@ -1,8 +1,6 @@
 import React, {useCallback} from 'react';
-import {StyleSheet, Text, View} from 'react-native';
 import colors from '@/data/colors';
 import {ColorSet, MAX_DICE_SET} from '@/data/consts';
-
 import ButtonOverlay from './ButtonOverlay';
 import Dice from './Dice';
 import {useAppDispatch, useAppSelector} from '@/hooks/storeHooks';
@@ -33,15 +31,21 @@ const DiceLine: React.FC<Props> = ({colorSet, face}) => {
   }, [colorSet, dispatch, face]);
 
   return (
-    <View style={[styles.container, {backgroundColor: color}]}>
-      <View style={styles.textInfo}>
-        <Text style={styles.textFace}>{face}</Text>
-        <View style={styles.textCountContainer}>
-          {!!diceCount && <Text style={styles.textCount}>x{diceCount}</Text>}
-        </View>
-      </View>
-      {!diceCount && <View style={styles.emptyBackground} />}
-      <View style={styles.diceSet}>
+    <div
+      className="relative flex flex-1 items-center justify-between w-full min-h-[50px]"
+      style={{backgroundColor: color}}>
+      <div className="flex flex-row justify-end w-[75px] shrink-0">
+        <span className="text-app-white font-bold text-[32px]">{face}</span>
+        <div className="ml-[5px] mb-[5px] w-[25px] flex items-end">
+          {!!diceCount && (
+            <span className="text-app-gray text-sm">x{diceCount}</span>
+          )}
+        </div>
+      </div>
+      {!diceCount && (
+        <div className="absolute inset-0 bg-black/60 pointer-events-none" />
+      )}
+      <div className="flex-1 flex flex-wrap items-center justify-center">
         {dices?.map(dice => (
           <Dice
             key={dice.id}
@@ -50,107 +54,33 @@ const DiceLine: React.FC<Props> = ({colorSet, face}) => {
             dice={dice}
           />
         ))}
-      </View>
-      <View style={styles.resultContainer}>
+      </div>
+      <div className="w-[50px] shrink-0 flex items-center justify-center">
         {!!diceCount && (
-          <Text style={[styles.result, result > 0 && styles.resultHit]}>
+          <span
+            className={`text-center text-[24px] ${
+              result > 0 ? 'text-app-white font-bold' : 'text-app-gray'
+            }`}>
             {result}
-          </Text>
+          </span>
         )}
-      </View>
-      <View style={styles.buttonsContainer}>
+      </div>
+      <div className="absolute inset-0 flex flex-row items-center justify-between w-full h-full">
         <ButtonOverlay
           text="-"
-          style={styles.button}
+          className="flex-1"
           disabled={rolling || !diceCount}
           onPress={onRemoveDice}
         />
         <ButtonOverlay
           text="+"
-          style={styles.button}
+          className="flex-1"
           disabled={rolling || diceCount >= MAX_DICE_SET}
           onPress={onAddDice}
         />
-      </View>
-    </View>
+      </div>
+    </div>
   );
 };
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    minHeight: 50,
-    width: '100%',
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-  },
-  emptyBackground: {
-    position: 'absolute',
-    width: '100%',
-    height: '100%',
-    backgroundColor: 'rgba(0, 0, 0, 0.6)',
-  },
-  diceSet: {
-    flex: 1,
-    flexWrap: 'wrap',
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  buttonsContainer: {
-    position: 'absolute',
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    width: '100%',
-    height: '100%',
-  },
-  button: {
-    flex: 1,
-    backgroundColor: 'rgba(255, 255, 255, 0.4)',
-    height: '100%',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  text: {
-    color: colors.WHITE,
-  },
-  textInfo: {
-    width: 75,
-    textAlign: 'center',
-    justifyContent: 'flex-end',
-    flexDirection: 'row',
-  },
-  textFace: {
-    fontSize: 32,
-    fontWeight: 'bold',
-    color: colors.WHITE,
-  },
-  textCountContainer: {
-    marginLeft: 5,
-    marginBottom: 5,
-    width: 25,
-    textAlign: 'center',
-    justifyContent: 'flex-end',
-  },
-  textCount: {
-    color: colors.GRAY,
-  },
-  resultContainer: {
-    width: 50,
-    textAlign: 'center',
-    justifyContent: 'center',
-  },
-  result: {
-    fontSize: 24,
-    textAlign: 'center',
-    color: colors.GRAY,
-  },
-  resultHit: {
-    fontWeight: 'bold',
-    color: colors.WHITE,
-  },
-});
 
 export default React.memo(DiceLine);

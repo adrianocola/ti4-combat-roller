@@ -1,5 +1,5 @@
 import {combineReducers, configureStore} from '@reduxjs/toolkit';
-import storage from '@react-native-async-storage/async-storage';
+import storage from 'redux-persist/lib/storage';
 import {
   FLUSH,
   PAUSE,
@@ -12,7 +12,7 @@ import {
 } from 'redux-persist';
 
 import dicesReducer from './diceSetSlice';
-import settingsReduces from './settingsSlice';
+import settingsReducer from './settingsSlice';
 
 const persistConfig = {
   version: 1,
@@ -23,7 +23,7 @@ const persistConfig = {
 
 const rootReducer = combineReducers({
   diceSet: dicesReducer,
-  settings: settingsReduces,
+  settings: settingsReducer,
 });
 
 const persistedReducer = persistReducer(persistConfig, rootReducer);
@@ -36,11 +36,10 @@ export const store = configureStore({
         ignoredActions: [FLUSH, REHYDRATE, PAUSE, PERSIST, PURGE, REGISTER],
       },
     }),
-  devTools: false,
+  devTools: import.meta.env.DEV,
 });
 
 export const persistor = persistStore(store);
 
 export type RootState = ReturnType<typeof store.getState>;
-
 export type AppDispatch = typeof store.dispatch;

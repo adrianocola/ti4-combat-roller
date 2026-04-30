@@ -43,16 +43,13 @@ export const diceSetSlice = createSlice({
     ) => {
       const dices =
         state[action.payload.colorSet].dices[action.payload.face] ?? [];
-
       if (dices.length >= MAX_DICE_SET) return;
-
       dices.push({
         id: randomId(),
         face: action.payload.face,
         duration: 0,
         success: false,
       });
-
       state[action.payload.colorSet].dices[action.payload.face] = dices;
     },
     removeDice: (
@@ -61,9 +58,7 @@ export const diceSetSlice = createSlice({
     ) => {
       const dices =
         state[action.payload.colorSet].dices[action.payload.face] ?? [];
-
       dices.pop();
-
       state[action.payload.colorSet].dices[action.payload.face] = dices;
     },
     reset: (state, action: PayloadAction<{colorSet: ColorSet}>) => {

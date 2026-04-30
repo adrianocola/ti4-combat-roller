@@ -1,12 +1,5 @@
 import React, {useCallback, useMemo, useState} from 'react';
-import ButtonImage from '@/components/ButtonImage';
-import ResetImage from '@assets/reset.png';
-import Button from '@/components/Button';
-import {StyleSheet, Text, View} from 'react-native';
 import {getChanceText} from '@/utils/chance';
-import D10Image from '@assets/d10.png';
-import colors from '@/data/colors';
-import Colors from '@/data/colors';
 import {store} from '@/store';
 import {reset, roll, setRolling} from '@/store/diceSetSlice';
 import {rollDices} from '@/utils/dice';
@@ -16,7 +9,10 @@ import {arraySum} from '@/utils/array';
 import {useAppDispatch, useAppSelector} from '@/hooks/storeHooks';
 import StatsModal from '@/components/StatsModal';
 
-const RollBar = () => {
+import D10Image from '@assets/d10.png';
+import ResetImage from '@assets/reset.png';
+
+const RollBar: React.FC = () => {
   const dispatch = useAppDispatch();
   const dicesColorSet = useAppSelector(state => state.diceSet);
   const selectedColorSet = useAppSelector(
@@ -46,7 +42,6 @@ const RollBar = () => {
       roll({colorSet: selectedColorSet, dices, chances, chancesAccumulative}),
     );
 
-    // No need to clean up this timeout, it must always update the state, even if the component is unmounted
     setTimeout(() => {
       dispatch(setRolling({colorSet: selectedColorSet, rolling: false}));
     }, MAX_ROLL_MS);
@@ -59,7 +54,7 @@ const RollBar = () => {
 
   const toggleStatsModal = useCallback(() => {
     trackEvent(Events.VIEW_STATS);
-    setStatsModalVisible(prevStatsModalVisible => !prevStatsModalVisible);
+    setStatsModalVisible(v => !v);
   }, []);
 
   const resultsTotal = useMemo(() => {
@@ -67,88 +62,55 @@ const RollBar = () => {
   }, [dicesColorSet, selectedColorSet]);
 
   const canRoll = !dicesColorSet[selectedColorSet].rolling && diceCount !== 0;
+  const accChances = dicesColorSet[selectedColorSet].chancesAccumulative;
 
   return (
     <>
-      <View style={styles.rollBar}>
-        <ButtonImage
-          style={[styles.button, styles.refresh]}
-          disabled={!canRoll}
-          onPress={onReset}
-          image={ResetImage}
-          imageSize={26}
-        />
-        <Button
-          style={styles.result}
-          transparent
+      <div className="grid grid-cols-3 items-center w-full pb-[15px] px-4 sm:px-8">
+        <div className="justify-self-start">
+          <button
+            type="button"
+            aria-label="Reset"
+            disabled={!canRoll}
+            onClick={onReset}
+            className="shrink-0 inline-flex items-center justify-center w-11 h-11 rounded-md bg-app-reset border border-app-white/20 transition active:opacity-50 disabled:opacity-25">
+            <img src={ResetImage} alt="" className="w-6 h-6" />
+          </button>
+        </div>
+        <button
+          type="button"
+          aria-label="Hit chances"
           disabled={diceCount === 0}
-          onPress={toggleStatsModal}>
-          <View style={styles.resultContent}>
-            <Text style={styles.resultText}>{resultsTotal}</Text>
-            <Text style={styles.statsText}>
-              {dicesColorSet[selectedColorSet].chancesAccumulative.length
-                ? `${getChanceText(dicesColorSet[selectedColorSet].chancesAccumulative[resultsTotal])}%`
-                : '%'}
-            </Text>
-          </View>
-        </Button>
-        <ButtonImage
-          style={styles.button}
-          disabled={!canRoll}
-          onPress={onRoll}
-          image={D10Image}
-        />
-      </View>
+          onClick={toggleStatsModal}
+          className="justify-self-center w-24 h-12 flex flex-col items-center justify-center bg-app-button border border-app-white/20 rounded-md transition active:opacity-50 disabled:opacity-25 leading-none">
+          <span className="text-app-white font-bold text-[22px] leading-none">
+            {resultsTotal}
+          </span>
+          <span className="text-app-gray text-[11px] leading-none mt-1 tabular-nums">
+            {accChances.length
+              ? `${getChanceText(accChances[resultsTotal])}%`
+              : '—%'}
+          </span>
+        </button>
+        <div className="justify-self-end">
+          <button
+            type="button"
+            aria-label="Roll"
+            disabled={!canRoll}
+            onClick={onRoll}
+            className="shrink-0 inline-flex items-center justify-center w-11 h-11 rounded-md bg-app-button border border-app-white/20 transition active:opacity-50 disabled:opacity-25">
+            <img src={D10Image} alt="" className="w-6 h-6" />
+          </button>
+        </div>
+      </div>
       <StatsModal
         colorSet={selectedColorSet}
         resultsTotal={resultsTotal}
-        diceCount={diceCount}
         visible={statsModalVisible}
         onClose={toggleStatsModal}
       />
     </>
   );
 };
-
-const styles = StyleSheet.create({
-  rollBar: {
-    paddingBottom: 15,
-    width: '100%',
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-around',
-  },
-  button: {
-    paddingHorizontal: 30,
-    paddingVertical: 10,
-    marginHorizontal: 20,
-  },
-  refresh: {
-    backgroundColor: colors.BACKGROUND_RESET,
-  },
-  result: {
-    flex: 1,
-    paddingVertical: 0,
-  },
-  resultContent: {
-    flex: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  resultText: {
-    color: colors.WHITE,
-    fontSize: 32,
-    lineHeight: 32,
-    fontWeight: 'bold',
-    textAlign: 'center',
-  },
-  statsText: {
-    color: Colors.GRAY_DARK,
-    fontSize: 12,
-    lineHeight: 12,
-    height: 10,
-    textAlign: 'center',
-  },
-});
 
 export default RollBar;

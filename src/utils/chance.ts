@@ -8,10 +8,8 @@ const calculateProbabilityList = (eventProbabilities: number[]): Big[] => {
     () => Array(numberOfEvents + 1).fill(new Big(0)),
   );
 
-  // Initialize base case: the probability of 0 events happening is 1 for 0 events.
   probabilityTable[0][0] = new Big(1);
 
-  // Fill the probability table
   for (let eventIndex = 1; eventIndex <= numberOfEvents; eventIndex++) {
     const currentEventProbability = new Big(eventProbabilities[eventIndex - 1]);
     for (
@@ -19,12 +17,10 @@ const calculateProbabilityList = (eventProbabilities: number[]): Big[] => {
       happeningCount <= numberOfEvents;
       happeningCount++
     ) {
-      // Probability of happeningCount events happening without considering the current event
       probabilityTable[eventIndex][happeningCount] = probabilityTable[
         eventIndex - 1
       ][happeningCount].times(new Big(1).minus(currentEventProbability));
       if (happeningCount > 0) {
-        // Add the probability of happeningCount events happening considering the current event
         probabilityTable[eventIndex][happeningCount] = probabilityTable[
           eventIndex
         ][happeningCount].plus(
@@ -54,8 +50,7 @@ export const calcExactSuccessChances = (dices: Dices) => {
   const chances: number[] = new Array(probabilityList.length).fill(0);
   const start = probabilityList.length - 1;
   for (let i = start; i >= 0; i -= 1) {
-    const chance = probabilityList[i];
-    chances[i] = chance.toNumber();
+    chances[i] = probabilityList[i].toNumber();
   }
 
   return chances;
@@ -70,7 +65,6 @@ export const calcAccumulativeSuccessChances = (probabilityList: number[]) => {
       .plus(i === start || i === 0 ? 0 : chances[i + 1])
       .toNumber();
   }
-
   return chances;
 };
 
@@ -79,32 +73,17 @@ export const getSuccessesText = (
   total: number,
   showExactResult: boolean,
 ) => {
-  if (successes === 0) {
-    return 'No hits';
-  }
-  if (successes === total - 1) {
-    return `All (${successes})`;
-  }
-
+  if (successes === 0) return 'No hits';
+  if (successes === total - 1) return `All (${successes})`;
   const hits = `${successes} hit${successes > 1 ? 's' : ''}`;
   return `${showExactResult ? 'Exactly' : 'At least'} ${hits}`;
 };
 
 export const getChanceText = (chance: number) => {
   chance *= 100;
-
-  if (chance === 100) {
-    return '100';
-  }
-  if (chance > 99.99) {
-    return '99.99';
-  }
-  if (chance === 0) {
-    return '0';
-  }
-  if (chance < 0.01) {
-    return '0.01';
-  }
-
+  if (chance === 100) return '100';
+  if (chance > 99.99) return '99.99';
+  if (chance === 0) return '0';
+  if (chance < 0.01) return '0.01';
   return chance.toFixed(2);
 };

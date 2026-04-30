@@ -1,12 +1,9 @@
-import React, {useCallback, useEffect, useMemo, useRef, useState} from 'react';
-import {FlatList, StyleSheet, View} from 'react-native';
-import {ListRenderItemInfo} from '@react-native/virtualized-lists/Lists/VirtualizedList';
+import React, {useEffect, useMemo, useRef} from 'react';
 import {
   calcAccumulativeSuccessChances,
   calcExactSuccessChances,
 } from '@/utils/chance';
 import HitChancesItem, {ITEM_HEIGHT} from '@/components/HitChancesItem';
-import Button from '@/components/Button';
 import {ColorSet} from '@/data/consts';
 import {useAppSelector} from '@/hooks/storeHooks';
 
@@ -15,118 +12,66 @@ interface HitChancesListProps {
   resultsTotal: number;
 }
 
+const ROW_GAP = 6;
+
 const HitChancesList: React.FC<HitChancesListProps> = ({
   colorSet,
   resultsTotal,
 }) => {
-  const [showExactResult, setShowExactResult] = useState(false);
   const diceSet = useAppSelector(state => state.diceSet[colorSet]);
-  const listRef = useRef<FlatList>(null);
+  const listRef = useRef<HTMLDivElement>(null);
   const firstRenderRef = useRef(true);
 
-  // aways calculate when opening the modal (user might open it without rolling the dice)
-  const rawChancesList: number[] = useMemo(() => {
-    return calcExactSuccessChances(diceSet.dices);
-  }, [diceSet.dices]);
-
-  const chancesList: number[] = useMemo(() => {
-    return showExactResult
-      ? rawChancesList
-      : calcAccumulativeSuccessChances(rawChancesList);
-  }, [showExactResult, rawChancesList]);
-
-  const renderItem = useCallback(
-    (info: ListRenderItemInfo<number>) => {
-      return (
-        <HitChancesItem
-          chance={info.item}
-          hits={info.index}
-          total={chancesList.length}
-          currentResult={resultsTotal}
-          showExactResult={showExactResult}
-        />
-      );
-    },
-    [chancesList.length, resultsTotal, showExactResult],
+  const exactChances = useMemo(
+    () => calcExactSuccessChances(diceSet.dices),
+    [diceSet.dices],
   );
 
-  const getItemLayout = useCallback(
-    (data: unknown, index: number) => ({
-      length: ITEM_HEIGHT,
-      offset: ITEM_HEIGHT * index,
-      index,
-    }),
-    [],
+  const accChances = useMemo(
+    () => calcAccumulativeSuccessChances(exactChances),
+    [exactChances],
   );
 
-  useEffect(() => {
-    listRef.current?.flashScrollIndicators();
-  }, []);
+  const total = exactChances.length;
 
   useEffect(() => {
     requestAnimationFrame(() => {
-      listRef.current?.scrollToIndex({
-        index: resultsTotal,
-        animated: !firstRenderRef.current,
+      const el = listRef.current;
+      if (!el) return;
+      const rowStride = ITEM_HEIGHT + ROW_GAP;
+      const rowOffset = rowStride * resultsTotal;
+      const top = rowOffset - el.clientHeight / 2 + ITEM_HEIGHT / 2;
+      el.scrollTo({
+        top: Math.max(0, top),
+        behavior: firstRenderRef.current ? 'instant' : 'smooth',
       });
       firstRenderRef.current = false;
     });
-  }, [resultsTotal]);
+  }, [resultsTotal, total]);
 
   return (
-    <View style={styles.container}>
-      <View style={styles.options}>
-        <Button
-          onPress={() => setShowExactResult(false)}
-          title="At Least X Hits"
-          transparent={showExactResult}
-          titleStyle={showExactResult && styles.notSelectedOption}
-        />
-        <Button
-          onPress={() => setShowExactResult(true)}
-          title="Exactly X Hits"
-          transparent={!showExactResult}
-          titleStyle={!showExactResult && styles.notSelectedOption}
-        />
-      </View>
-      <FlatList
+    <div className="flex flex-col flex-1 min-h-0 mt-4">
+      <div className="grid grid-cols-3 px-2 pb-1.5 text-xs font-semibold uppercase tracking-wider text-app-gray">
+        <span />
+        <span className="text-right">At least</span>
+        <span className="text-right">Exactly</span>
+      </div>
+      <div
         ref={listRef}
-        data={chancesList}
-        renderItem={renderItem}
-        getItemLayout={getItemLayout}
-        style={styles.list}
-        indicatorStyle="white"
-        contentContainerStyle={styles.listContent}
-      />
-    </View>
+        className="flex-1 overflow-y-auto rounded-md py-1 px-2">
+        {exactChances.map((exact, index) => (
+          <HitChancesItem
+            key={index}
+            hits={index}
+            exactChance={exact}
+            accChance={accChances[index]}
+            total={total}
+            currentResult={resultsTotal}
+          />
+        ))}
+      </div>
+    </div>
   );
 };
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-  },
-  options: {
-    flexDirection: 'row',
-    justifyContent: 'space-around',
-    marginTop: 20,
-    alignItems: 'center',
-  },
-  notSelectedOption: {
-    fontWeight: 'normal',
-    textDecorationLine: 'underline',
-  },
-  list: {
-    marginTop: 20,
-    marginBottom: 10,
-    overflow: 'hidden',
-    borderRadius: 5,
-    paddingVertical: 10,
-  },
-  listContent: {
-    paddingHorizontal: 10,
-    paddingBottom: 20,
-  },
-});
 
 export default React.memo(HitChancesList);

@@ -1,7 +1,6 @@
-import Aptabase from '@aptabase/react-native';
+import {init, trackEvent as aptabaseTrackEvent} from '@aptabase/web';
 
-// @ts-ignore
-const aptabaseKey = process.env.EXPO_PUBLIC_APTABASE;
+const aptabaseKey = import.meta.env.VITE_PUBLIC_APTABASE;
 
 export enum Events {
   OPEN = 'open',
@@ -13,8 +12,7 @@ export enum Events {
 
 export const initAnalytics = () => {
   if (!aptabaseKey) return;
-
-  Aptabase.init(aptabaseKey);
+  init(aptabaseKey);
 };
 
 export const trackEvent = (
@@ -22,6 +20,5 @@ export const trackEvent = (
   props?: Record<string, string | number | boolean>,
 ) => {
   if (!aptabaseKey) return;
-
-  Aptabase.trackEvent(event, props);
+  aptabaseTrackEvent(event, props);
 };

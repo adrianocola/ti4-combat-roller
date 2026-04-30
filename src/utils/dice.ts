@@ -14,34 +14,28 @@ import {
   getRandomCount,
   getRandomValues,
   setRandomValues,
-} from '@/services/asyncStorage';
+} from '@/services/storage';
 import {fetchRandomIntegers} from '@/data/api';
 import {Events, trackEvent} from '@/services/analytics';
 import Big from 'big.js';
 
-// control if the download is already in progress
 const downloadingRef = {downloading: false};
+
 const getDiceCount = (dices: Dices): number => {
   return Object.values(dices).reduce((a, set) => a + set.length, 0);
 };
 
-// Download more random data from the API (if needed)
 export const downloadMoreRandomData = async () => {
   const randomCount = await getRandomCount();
   if (downloadingRef.downloading || randomCount > MIN_RANDOM_COUNT) return;
-
   downloadingRef.downloading = true;
-
   try {
     const newValues = await fetchRandomIntegers();
     const existingValues = await getRandomValues();
-
-    const finalValues = [...existingValues, ...newValues];
-    await setRandomValues(finalValues);
+    await setRandomValues([...existingValues, ...newValues]);
   } catch (e) {
     console.error('downloadMoreRandomData error', e);
   }
-
   downloadingRef.downloading = false;
 };
 
@@ -49,15 +43,12 @@ const getRandomFaces = async (quantity: number): Promise<Face[]> => {
   const allRandomValues = await getRandomValues();
   const trueRandomValues = allRandomValues.slice(0, quantity);
   const remainingRandomValues = allRandomValues.slice(quantity);
-
   await setRandomValues(remainingRandomValues);
 
-  // if there are missing values, fill in the rest with local random faces
   const fillInRandomValues = new Array(quantity - trueRandomValues.length)
     .fill(0)
     .map(() => randomFace());
 
-  // no await needed, the download must be done in the background
   downloadMoreRandomData();
 
   return [...trueRandomValues, ...fillInRandomValues] as Face[];

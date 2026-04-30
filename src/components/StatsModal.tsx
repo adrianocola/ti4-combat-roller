@@ -1,109 +1,63 @@
-import React from 'react';
-import {
-  Modal,
-  ModalProps,
-  StyleSheet,
-  Text,
-  TouchableOpacity,
-  View,
-} from 'react-native';
-import Colors from '@/data/colors';
+import React, {useEffect} from 'react';
+import {AnimatePresence, motion} from 'framer-motion';
+import {ColorSet} from '@/data/consts';
 import HitChancesList from '@/components/HitChancesList';
 import Button from '@/components/Button';
-import {ColorSet} from '@/data/consts';
 
-interface StatsModalPros extends ModalProps {
+interface StatsModalProps {
   colorSet: ColorSet;
   resultsTotal: number;
-  diceCount: number;
+  visible: boolean;
   onClose: () => void;
 }
 
-const StatsModal: React.FC<StatsModalPros> = ({
+const StatsModal: React.FC<StatsModalProps> = ({
   colorSet,
   resultsTotal,
-  diceCount,
+  visible,
   onClose,
-  ...props
 }) => {
+  useEffect(() => {
+    if (!visible) return;
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') onClose();
+    };
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, [visible, onClose]);
+
   return (
-    <Modal
-      {...props}
-      animationType="fade"
-      transparent={true}
-      onRequestClose={onClose}>
-      <View style={styles.container}>
-        <TouchableOpacity
-          style={styles.backdrop}
-          onPress={onClose}
-          activeOpacity={0.9}
-        />
-        <View style={styles.modal}>
-          <Text style={styles.title}>Hit Chances</Text>
-          <Text style={styles.subtitle}>{diceCount} dice</Text>
-          <HitChancesList colorSet={colorSet} resultsTotal={resultsTotal} />
-          <Button
-            style={styles.closeContainer}
-            transparent
-            title="✖︎"
-            titleStyle={styles.closeText}
-            onPress={onClose}
-            hitSlop={15}
+    <AnimatePresence>
+      {visible && (
+        <motion.div
+          className="fixed inset-0 z-50 flex items-center justify-center"
+          initial={{opacity: 0}}
+          animate={{opacity: 1}}
+          exit={{opacity: 0}}
+          transition={{duration: 0.2}}>
+          <button
+            type="button"
+            onClick={onClose}
+            aria-label="Close"
+            className="absolute inset-0 bg-black/75"
           />
-        </View>
-      </View>
-    </Modal>
+          <div className="relative bg-app-modal rounded-[25px] p-5 flex flex-col w-[90%] max-w-md md:max-w-lg lg:max-w-xl max-h-[80vh] min-h-80 shadow-[0_5px_5px_rgba(0,0,0,0.5)]">
+            <h2 className="text-app-white font-bold text-center text-xl">
+              Hit Chances
+            </h2>
+            <HitChancesList colorSet={colorSet} resultsTotal={resultsTotal} />
+            <Button
+              onClick={onClose}
+              transparent
+              title="✖︎"
+              className="absolute top-2.5 right-2.5"
+              titleClassName="text-app-gray font-normal text-2xl"
+            />
+          </div>
+        </motion.div>
+      )}
+    </AnimatePresence>
   );
 };
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  backdrop: {
-    position: 'absolute',
-    width: '100%',
-    height: '100%',
-    top: 0,
-    left: 0,
-    backgroundColor: 'rgba(0, 0, 0, 0.75)',
-  },
-  modal: {
-    flex: 1,
-    width: '90%',
-    maxHeight: '50%',
-    backgroundColor: Colors.BACKGROUND_MODAL,
-    shadowColor: Colors.BLACK,
-    shadowRadius: 5,
-    shadowOffset: {width: 0, height: 5},
-    shadowOpacity: 0.5,
-    padding: 20,
-    borderRadius: 25,
-  },
-  title: {
-    fontWeight: 'bold',
-    width: '100%',
-    color: Colors.WHITE,
-    textAlign: 'center',
-    fontSize: 20,
-  },
-  subtitle: {
-    color: Colors.GRAY,
-    textAlign: 'center',
-    marginTop: 3,
-    fontSize: 12,
-  },
-  closeContainer: {
-    position: 'absolute',
-    top: 10,
-    right: 10,
-  },
-  closeText: {
-    fontSize: 24,
-    color: Colors.GRAY,
-  },
-});
 
 export default React.memo(StatsModal);

@@ -1,89 +1,141 @@
-import Animated, {useSharedValue, withTiming} from 'react-native-reanimated';
 import React, {useEffect, useRef} from 'react';
-import {Pressable, StyleSheet, Text, ViewStyle} from 'react-native';
-import colors from '@/data/colors';
-import {GestureResponderEvent} from 'react-native/Libraries/Types/CoreEventTypes';
+import {motion, useMotionValue, animate} from 'framer-motion';
 
 interface Props {
   text: string;
   disabled?: boolean;
-  style?: ViewStyle;
+  className?: string;
   onPress: () => void;
 }
 
 const SWIPE_CHANGE_X_THRESHOLD = 10;
 const SWIPE_DETECTION_THRESHOLD = 100;
-const IN_DURATION = 200;
-const OUT_DURATION = 300;
+const IN_DURATION = 0.2;
+const OUT_DURATION = 0.3;
 
-const ButtonOverlay: React.FC<Props> = ({text, disabled, style, onPress}) => {
+const ButtonOverlay: React.FC<Props> = ({
+  text,
+  disabled,
+  className = '',
+  onPress,
+}) => {
   const pressInPageX = useRef(0);
   const swiping = useRef(false);
-  const opacity = useSharedValue(0);
-
+  const opacity = useMotionValue(0);
+  const inTimeoutRef = useRef<ReturnType<typeof setTimeout> | undefined>(
+    undefined,
+  );
   const outTimeoutRef = useRef<ReturnType<typeof setTimeout> | undefined>(
     undefined,
   );
+  const activeAnimRef = useRef<ReturnType<typeof animate> | undefined>(
+    undefined,
+  );
 
-  const onPressIn = ({nativeEvent}: GestureResponderEvent) => {
-    pressInPageX.current = nativeEvent.pageX;
-    swiping.current = false;
+  const stopAnim = () => {
+    activeAnimRef.current?.stop();
+    activeAnimRef.current = undefined;
+  };
 
+  const resetVisual = () => {
+    clearTimeout(inTimeoutRef.current);
     clearTimeout(outTimeoutRef.current);
-    setTimeout(() => {
+    stopAnim();
+    opacity.set(0);
+  };
+
+  const safetyResetRef = useRef<(() => void) | undefined>(undefined);
+
+  const armSafetyReset = () => {
+    const handler = () => {
+      resetVisual();
+      window.removeEventListener('pointerup', handler);
+      window.removeEventListener('pointercancel', handler);
+      safetyResetRef.current = undefined;
+    };
+    safetyResetRef.current = handler;
+    window.addEventListener('pointerup', handler);
+    window.addEventListener('pointercancel', handler);
+  };
+
+  const disarmSafetyReset = () => {
+    if (!safetyResetRef.current) return;
+    window.removeEventListener('pointerup', safetyResetRef.current);
+    window.removeEventListener('pointercancel', safetyResetRef.current);
+    safetyResetRef.current = undefined;
+  };
+
+  const onPointerDown = (e: React.PointerEvent<HTMLButtonElement>) => {
+    if (disabled) return;
+    try {
+      e.currentTarget.setPointerCapture(e.pointerId);
+    } catch {
+      // setPointerCapture can throw on some browsers if not allowed
+    }
+    pressInPageX.current = e.pageX;
+    swiping.current = false;
+    clearTimeout(outTimeoutRef.current);
+    stopAnim();
+    armSafetyReset();
+    inTimeoutRef.current = setTimeout(() => {
       if (swiping.current) return;
-      opacity.value = withTiming(1, {duration: IN_DURATION});
+      activeAnimRef.current = animate(opacity, 1, {duration: IN_DURATION});
     }, SWIPE_DETECTION_THRESHOLD);
   };
 
-  const onPressOut = ({nativeEvent}: GestureResponderEvent) => {
-    // if the onPressOut was called because user is swiping the scrollView, pageX will be undefined on iOS
-    // on Android, we check if the pageX is different from the pressInPageX
-    swiping.current =
-      nativeEvent.pageX === undefined ||
-      Math.abs(nativeEvent.pageX - pressInPageX.current) >
-        SWIPE_CHANGE_X_THRESHOLD;
+  const fadeOut = () => {
+    outTimeoutRef.current = setTimeout(
+      () => {
+        activeAnimRef.current = animate(opacity, 0, {duration: OUT_DURATION});
+      },
+      SWIPE_DETECTION_THRESHOLD + IN_DURATION * 1000,
+    );
+  };
 
+  const onPointerUp = (e: React.PointerEvent) => {
+    disarmSafetyReset();
+    if (disabled) return;
+    swiping.current =
+      Math.abs(e.pageX - pressInPageX.current) > SWIPE_CHANGE_X_THRESHOLD;
     if (swiping.current) {
-      opacity.value = 0;
+      resetVisual();
     } else {
-      outTimeoutRef.current = setTimeout(() => {
-        opacity.value = withTiming(0, {duration: OUT_DURATION});
-      }, SWIPE_DETECTION_THRESHOLD + IN_DURATION);
+      onPress();
+      fadeOut();
     }
+  };
+
+  const onPointerCancel = () => {
+    disarmSafetyReset();
+    resetVisual();
   };
 
   useEffect(() => {
     return () => {
+      clearTimeout(inTimeoutRef.current);
       clearTimeout(outTimeoutRef.current);
+      stopAnim();
+      disarmSafetyReset();
     };
   }, []);
 
   return (
-    <Pressable
-      style={styles.pressable}
+    <button
+      type="button"
       disabled={disabled}
-      onPressIn={onPressIn}
-      onPressOut={onPressOut}
-      onPress={onPress}>
-      <Animated.View style={[style, {opacity}]}>
-        <Text style={styles.text}>{text}</Text>
-      </Animated.View>
-    </Pressable>
+      onPointerDown={onPointerDown}
+      onPointerUp={onPointerUp}
+      onPointerCancel={onPointerCancel}
+      className={`relative h-full select-none touch-pan-x ${className}`.trim()}>
+      <motion.div
+        style={{opacity}}
+        className="absolute inset-0 flex items-center justify-center pointer-events-none bg-white/40">
+        <span className="text-app-white font-light text-[64px] leading-[64px] [text-shadow:0_0_3px_#000]">
+          {text}
+        </span>
+      </motion.div>
+    </button>
   );
 };
-
-const styles = StyleSheet.create({
-  pressable: {
-    flex: 1,
-  },
-  text: {
-    color: colors.WHITE,
-    fontSize: 64,
-    lineHeight: 64,
-    textShadowColor: colors.BLACK,
-    textShadowRadius: 3,
-  },
-});
 
 export default React.memo(ButtonOverlay);

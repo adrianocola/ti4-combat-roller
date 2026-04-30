@@ -1,0 +1,59 @@
+@import 'tailwindcss';
+
+@theme {
+  --color-app-bg: #0e0e0e;
+  --color-app-modal: #161616;
+  --color-app-button: #1f1f1f;
+  --color-app-reset: #5b2727;
+  --color-app-white: #fcfcfc;
+  --color-app-gray: #c0c0c0;
+  --color-app-gray-dark: #575757;
+  --color-app-selected: #ffba08;
+}
+
+html,
+body,
+#root {
+  height: 100%;
+  width: 100%;
+  margin: 0;
+  padding: 0;
+  background-color: var(--color-app-bg);
+  color: var(--color-app-white);
+  font-family:
+    -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu,
+    Cantarell, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -webkit-tap-highlight-color: transparent;
+  overscroll-behavior: none;
+  user-select: none;
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+@layer base {
+  button {
+    font: inherit;
+    background: none;
+    border: 0;
+    padding: 0;
+    color: inherit;
+    cursor: pointer;
+  }
+  button:disabled {
+    cursor: not-allowed;
+  }
+}
+
+/* Hide scrollbar on horizontal carousel */
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+.no-scrollbar {
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
