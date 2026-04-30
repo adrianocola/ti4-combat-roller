@@ -2,7 +2,11 @@
 
 Web app to set up and roll [Twilight Imperium 4](https://boardgamegeek.com/boardgame/233078/twilight-imperium-fourth-edition) combat dice.
 
-Built with [Vite](https://vitejs.dev/), [React 19](https://react.dev/), [Tailwind CSS v4](https://tailwindcss.com/), [Redux Toolkit](https://redux-toolkit.js.org/), and [Framer Motion](https://www.framer.com/motion/).
+Live: <https://ti4combatroller.adrianocola.com>
+
+| Main dice screen             | Hit chances modal             |
+| ---------------------------- | ----------------------------- |
+| ![Main dice screen](ss1.png) | ![Hit chances modal](ss2.png) |
 
 ## Features
 
@@ -21,6 +25,8 @@ Requirements:
 - [Node.js](https://nodejs.org/) (see `.nvmrc`)
 - [pnpm](https://pnpm.io/)
 
+Built with [Vite](https://vitejs.dev/), [React 19](https://react.dev/), [Tailwind CSS v4](https://tailwindcss.com/), [Redux Toolkit](https://redux-toolkit.js.org/), and [Framer Motion](https://www.framer.com/motion/).
+
 ```shell
 git clone https://github.com/adrianocola/ti4-combat-roller
 cd ti4-combat-roller
@@ -30,9 +36,6 @@ pnpm install
 cp .env.sample .env.local
 
 pnpm dev      # start Vite dev server (http://localhost:5173)
-pnpm build    # production build into dist/
-pnpm preview  # preview the production build
-pnpm typecheck
 ```
 
 The repo is a pnpm workspace; the optional `workers/` package contains a Cloudflare Worker that serves random integers consumed by the app when `VITE_PUBLIC_API_ENDPOINT` is set.
