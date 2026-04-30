@@ -43,7 +43,7 @@ export default ({config}: ConfigContext): ExpoConfig => ({
   },
   runtimeVersion:
     // @ts-ignore
-    config?.runtimeVersion ?? process.env.RUNTIME_VERSION ?? '1.0.0',
+    config?.runtimeVersion ?? process.env.RUNTIME_VERSION ?? '1.0.0', // must be updated only when native code changes
   extra: {
     eas: {
       // @ts-ignore

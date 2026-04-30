@@ -27,7 +27,7 @@ git clone https://github.com/adrianocola/ti4-combat-roller
 
 # Change to the project directory and install dependencies
 cd ti4-combat-roller
-npm install
+pnpm install
 
 # Copy the app.json.sample file to app.json and fill in the required fields
 cp app.json.sample app.json
@@ -36,8 +36,8 @@ cp app.json.sample app.json
 cp .env.sample .env.local
 
 # Run the app in the simulator
-npm run ios # or
-npm run android
+pnpm ios # or
+pnpm android
 ```
 
 For more details check [Expo](https://expo.dev/) and [Expo EAS](https://expo.dev/eas) documentation.
