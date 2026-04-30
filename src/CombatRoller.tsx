@@ -41,7 +41,7 @@ const CombatRoller: React.FC = () => {
       <main className="flex-1 w-full flex items-center justify-center min-h-0 max-w-[900px]">
         <DiceSets />
       </main>
-      <footer className="w-full bg-app-bg pt-2 sm:pt-[15px] max-w-[900px] pb-[calc(env(safe-area-inset-bottom)+6px)]">
+      <footer className="w-full bg-app-bg pt-3 max-w-[900px] pb-[max(env(safe-area-inset-bottom),12px)]">
         <RollBar />
       </footer>
       <InstallPrompt />

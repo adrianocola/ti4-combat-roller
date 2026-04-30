@@ -66,7 +66,7 @@ const RollBar: React.FC = () => {
 
   return (
     <>
-      <div className="grid grid-cols-3 items-center w-full pb-[15px] px-4 sm:px-8">
+      <div className="grid grid-cols-3 items-center w-full px-4 sm:px-8">
         <div className="justify-self-start">
           <button
             type="button"
