@@ -21,7 +21,9 @@ const ButtonOverlay: React.FC<Props> = ({text, disabled, style, onPress}) => {
   const swiping = useRef(false);
   const opacity = useSharedValue(0);
 
-  const outTimeoutRef = useRef<ReturnType<typeof setTimeout>>();
+  const outTimeoutRef = useRef<ReturnType<typeof setTimeout> | undefined>(
+    undefined,
+  );
 
   const onPressIn = ({nativeEvent}: GestureResponderEvent) => {
     pressInPageX.current = nativeEvent.pageX;
